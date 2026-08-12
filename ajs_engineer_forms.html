@@ -1,0 +1,1013 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AJS Energy - engineer forms</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCw2KSI+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjU2IiBoZWlnaHQ9IjEyNCIgZmlsbD0iIzAwNUY4QyI+PC9yZWN0PjxyZWN0IHg9IjYyIiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iMTI0IiBmaWxsPSIjMDA1RjhDIj48L3JlY3Q+PHJlY3QgeD0iMTI0IiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iMTI0IiBmaWxsPSIjMDA1RjhDIj48L3JlY3Q+PHJlY3QgeD0iMCIgeT0iMTMwIiB3aWR0aD0iMTgwIiBoZWlnaHQ9IjM4IiBmaWxsPSIjMDA4NTlGIj48L3JlY3Q+PHBhdGggZD0iTTQsODggTDIzLDM2IEwzMywzNiBMNTIsODggTDQxLjUsODggTDM4LjYsNzIgTDE3LjQsNzIgTDE0LjUsODggWiBNMjgsNDUgTDIyLDYzIEwzNCw2MyBaIiBmaWxsPSIjZmZmZmZmIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjwvcGF0aD48cGF0aCBkPSJNMTA4LDM2IEwxMDgsNzAgQzEwOCw4MC41IDEwMCw4OCA4OSw4OCBDNzksODggNzIsODIgNzAsNzMgTDgwLjUsNzAgQzgyLDc2IDg1LDc5IDg5LDc5IEM5NCw3OSA5Ni41LDc1LjUgOTYuNSw3MCBMOTYuNSwzNiBaIiBmaWxsPSIjZmZmZmZmIj48L3BhdGg+PHBhdGggZD0iTTE2NSw0My41IEwxNjUsNDkgQTEzLDEzIDAgMSAwIDE1Miw2MiBBMTMsMTMgMCAxIDEgMTM5LDc1IEwxMzksODAuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjExLjUiPjwvcGF0aD48L2c+PC9zdmc+">
+<style>
+  :root{
+    --teal:#1886a1;--navy:#05618e;--mist:#e6ebed;
+    --ink:#1c2b30;--line:#c7d3d6;--surface:#fff;--pale:#f4fafb;
+    --ok:#1c7a4d;--danger:#b3261e;--dangerbg:#fdf3f2;
+    --hazard:#a15c00;--hazardbg:#fdf1d6;--hazard-line:#e3c37c;
+    --muted:#5d6c72;--faint:#8a959a;
+    --r-sm:4px;--r-md:8px;--r-lg:14px;--r-pill:999px;
+    --sh-sm:0 1px 2px rgba(5,40,50,.08);
+    --sh-md:0 4px 14px rgba(5,40,50,.14);
+    --sh-lg:0 10px 30px rgba(5,40,50,.24);
+    --sp1:4px;--sp2:8px;--sp3:12px;--sp4:16px;--sp5:24px;--sp6:32px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--mist);
+       font-size:15px;line-height:1.5;padding-bottom:80px}
+  button{font-family:inherit;font-size:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r-sm)}
+
+  .topbar{background:var(--navy);color:#fff;padding:12px 18px;display:flex;
+          align-items:center;gap:14px;flex-wrap:wrap}
+  .logo{display:block;height:32px;width:auto}
+  .who{margin-left:auto;font-size:12px;color:#a8d4de;background:none;border:none;
+       padding:5px 8px;border-radius:var(--r-sm)}
+  .who:hover{background:rgba(255,255,255,.1);color:#fff}
+  .accent{height:3px;background:var(--teal)}
+  .netbar{background:var(--surface);border-bottom:1px solid var(--line);padding:7px 18px;
+          display:flex;gap:10px;align-items:center;font-size:13px;flex-wrap:wrap}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--ok)}
+  .dot.off{background:var(--hazard)}
+  .netbar .sp{margin-left:auto}
+  .tbtn{background:none;border:1px solid var(--line);border-radius:var(--r-sm);padding:5px 11px;color:var(--ink)}
+  .pill{background:var(--hazardbg);border:1px solid var(--hazard-line);border-radius:var(--r-sm);padding:2px 9px;
+        color:var(--hazard);font-size:12px}
+
+  main{max-width:760px;margin:0 auto;padding:20px 18px}
+  h1{font-size:22px;color:var(--navy);margin:0 0 4px;font-weight:700}
+  .sub{color:var(--muted);margin:0 0 20px;font-size:14px}
+
+  /* form picker */
+  .pick{display:block;width:100%;text-align:left;background:var(--surface);
+        border:1px solid var(--line);border-left:4px solid var(--teal);padding:15px 16px;
+        margin-bottom:11px;border-radius:var(--r-md);box-shadow:var(--sh-sm)}
+  .pick:hover{background:var(--pale);box-shadow:var(--sh-md)}
+  .pick b{display:block;color:var(--navy);font-size:15px}
+  .pick small{color:var(--muted);font-size:13px}
+
+  /* progress rail */
+  .railwrap{margin-bottom:var(--sp4)}
+  .rail{display:flex;gap:3px;flex-wrap:wrap}
+  .rail button{flex:1;min-width:64px;background:var(--surface);color:var(--muted);border:1px solid var(--line);
+               padding:8px 4px;font-size:11px;font-weight:600;border-radius:var(--r-sm);
+               display:flex;align-items:center;justify-content:center;gap:4px}
+  .rail button svg{flex:none}
+  .rail button.now{background:var(--navy);border-color:var(--navy);color:#fff;box-shadow:var(--sh-sm)}
+  .rail button.seen{background:#eef5f6;border-color:#d7e6e8;color:var(--navy)}
+  .rail button.done{background:#dcecef;border-color:#c3dde1;color:var(--navy)}
+  .railbar{height:4px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-pill);
+           margin-top:7px;overflow:hidden}
+  .railbar span{display:block;height:100%;background:var(--teal);transition:width .25s ease}
+  .railcap{font-size:12px;color:var(--muted);margin-top:6px;font-weight:600}
+
+  .sect{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+        margin-bottom:14px;box-shadow:var(--sh-sm)}
+  .sect > h2{margin:0;padding:12px 15px;font-size:15px;font-weight:700;color:var(--navy);
+             border-bottom:1px solid var(--line)}
+  .sect .body{padding:0}
+
+  .f{padding:13px 15px;border-bottom:1px solid #eef2f3}
+  .f:last-child{border-bottom:none}
+  .f > label{display:block;font-size:14px;font-weight:700;color:var(--ink);margin-bottom:7px}
+  .f.miss{background:var(--dangerbg);box-shadow:inset 3px 0 0 var(--danger)}
+  .star{color:var(--danger);font-weight:bold;margin-right:3px}
+  .hint{display:block;font-size:12px;font-weight:400;color:var(--faint);margin-top:2px}
+  .f input[type=text],.f input[type=number],.f input[type=date],.f input[type=time],
+  .f textarea,.f select{width:100%;padding:10px 11px;border:1px solid var(--line);
+       border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--surface);color:var(--ink)}
+  .f textarea{resize:vertical}
+
+  .seg{display:flex;gap:5px;flex-wrap:wrap}
+  .seg button{border:1px solid var(--line);background:var(--surface);border-radius:var(--r-sm);
+              padding:9px 16px;color:var(--muted);min-width:62px;min-height:40px}
+  .seg button.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:bold}
+  .seg button.on.no{background:var(--danger);border-color:var(--danger)}
+  .seg button.on.na{background:var(--muted);border-color:var(--muted)}
+
+  .radios{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  @media(max-width:480px){.radios{grid-template-columns:1fr}}
+  .radios button{text-align:left;border:1px solid var(--line);background:var(--surface);
+                 border-radius:var(--r-sm);padding:10px 11px;font-size:14px;color:var(--muted);min-height:40px}
+  .radios button.on{border:2px solid var(--navy);background:var(--pale);color:var(--navy);
+                    font-weight:bold;padding:9px 10px}
+
+  .cams{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start}
+  .addcam{border:1px dashed var(--line);background:#fbfcfc;border-radius:var(--r-md);width:96px;
+          height:96px;color:var(--teal);font-size:11px;line-height:1.3;padding:6px;
+          display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+  .addcam:hover{border-color:var(--teal);background:var(--pale)}
+  .thumb{position:relative;width:96px;height:96px}
+  .thumb img{width:100%;height:100%;object-fit:cover;border-radius:var(--r-md);
+             border:1px solid var(--teal);display:block}
+  .thumb-ok{position:absolute;left:-6px;bottom:-6px;width:20px;height:20px;border-radius:50%;
+            background:var(--ok);color:#fff;display:flex;align-items:center;justify-content:center;
+            border:2px solid #fff}
+  .thumb-rm{position:absolute;top:-7px;right:-7px;width:24px;height:24px;border-radius:50%;
+            background:var(--danger);color:#fff;border:2px solid #fff;display:flex;
+            align-items:center;justify-content:center;padding:0;box-shadow:var(--sh-sm)}
+  @keyframes thumbIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+  .thumb.new{animation:thumbIn .25s ease}
+  @media(prefers-reduced-motion:reduce){.thumb.new{animation:none}}
+  .kb{font-size:11px;color:var(--faint);margin-top:5px}
+
+  .sigwrap{border:1px solid var(--line);border-radius:var(--r-md);background:#fdfdfd;overflow:hidden}
+  .sigwrap canvas{display:block;width:100%;height:130px;touch-action:none}
+  .sigbar{display:flex;gap:8px;padding:8px 10px;border-top:1px solid var(--line);font-size:12px;
+          color:var(--faint);align-items:center}
+  .sigbar .signote{display:flex;align-items:center;gap:6px}
+  .sigbar .signote svg{color:var(--navy);flex:none}
+  .sigbar button{margin-left:auto;background:none;border:1px solid var(--line);
+                 border-radius:var(--r-sm);padding:4px 11px;color:var(--navy);font-size:12px}
+
+  .repeat{border:1px solid var(--line);border-left:4px solid var(--teal);margin:0 0 12px;
+          background:var(--surface);border-radius:0 var(--r-md) var(--r-md) 0;overflow:hidden;
+          box-shadow:var(--sh-sm)}
+  .rhead{padding:0;background:var(--pale);border-bottom:1px solid var(--line);display:flex;align-items:stretch}
+  .rtoggle{flex:1;display:flex;align-items:center;gap:9px;background:none;border:none;text-align:left;
+           padding:12px 14px;color:var(--navy)}
+  .rtoggle svg{transition:transform .15s ease;flex:none}
+  .repeat.collapsed .rtoggle svg{transform:rotate(-90deg)}
+  .rtitle{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .rtitle b{color:var(--navy);font-size:14px}
+  .rsum{font-size:12px;color:var(--muted);font-weight:400;overflow:hidden;text-overflow:ellipsis;
+        white-space:nowrap}
+  .rremove{background:none;border:none;color:var(--danger);font-size:12px;text-decoration:underline;
+           padding:12px 14px;white-space:nowrap}
+  .addnew{background:var(--ok);color:#fff;border:none;border-radius:var(--r-md);
+          padding:11px 22px;font-weight:bold;display:flex;align-items:center;gap:8px;
+          margin:4px auto 16px;box-shadow:var(--sh-sm)}
+
+  .navbar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);
+          border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:10px;
+          align-items:center;box-shadow:var(--sh-md)}
+  .navbar .mid{margin:0 auto;display:flex;gap:8px}
+  .navbar button{background:none;border:1px solid var(--line);border-radius:var(--r-md);
+                 padding:10px 15px;color:var(--navy);min-height:44px;display:flex;
+                 align-items:center;gap:6px}
+  .navbar button:disabled{opacity:.35;cursor:not-allowed}
+  .navbar .go{background:var(--teal);color:#fff;border:none;font-weight:bold;padding:11px 26px;
+              box-shadow:var(--sh-sm)}
+  .navbar .go:hover{background:var(--navy)}
+
+  .alert{border:1px solid var(--hazard-line);background:var(--hazardbg);border-left:4px solid var(--hazard);
+         padding:13px 15px;margin-bottom:14px;font-size:14px;border-radius:var(--r-md)}
+  .alert b{color:var(--navy);display:block;margin-bottom:5px}
+  .alert ul{margin:6px 0 0;padding-left:20px;color:var(--muted);font-size:13px}
+
+  .alert.danger{position:relative;overflow:hidden;border:1px solid #e5b4ae;background:var(--dangerbg);
+                border-left:none;padding:16px 16px 16px 22px;border-radius:var(--r-lg);
+                box-shadow:var(--sh-lg)}
+  .alert.danger .hazardstripe{position:absolute;left:0;top:0;bottom:0;width:8px;
+                background:repeating-linear-gradient(45deg,var(--hazard) 0 6px,#20160a 6px 12px)}
+  .alert.danger b{display:flex;align-items:center;gap:8px;color:var(--danger);font-size:15px;margin-bottom:7px}
+  .alert.danger b svg{flex:none;color:var(--danger)}
+  @keyframes gateIn{from{transform:translateY(-10px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .alert.danger.enter{animation:gateIn .35s ease}
+  @media(prefers-reduced-motion:reduce){.alert.danger.enter{animation:none}}
+
+  .out{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:18px;
+       box-shadow:var(--sh-sm)}
+  .out h2{margin:0 0 4px;font-size:17px;color:var(--navy)}
+  .out dl{display:grid;grid-template-columns:auto 1fr;gap:5px 16px;margin:14px 0 0;font-size:13px}
+  .out dt{color:var(--navy);font-weight:bold}
+  .out dd{margin:0}
+  .out pre{background:#f7f9fa;border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;
+           font-size:11px;overflow:auto;max-height:260px;margin-top:14px}
+  .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--navy);
+         color:#fff;padding:10px 20px;border-radius:var(--r-md);font-size:14px;z-index:30;
+         box-shadow:var(--sh-md)}
+  .hidden{display:none}
+</style>
+
+<div class="topbar">
+  <svg class="logo" viewBox="0 0 180 168" role="img" aria-label="AJS Energy"><title>AJS Energy</title><rect x="0" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="62" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="124" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="0" y="130" width="180" height="38" fill="#00859F"></rect><path d="M4,88 L23,36 L33,36 L52,88 L41.5,88 L38.6,72 L17.4,72 L14.5,88 Z M28,45 L22,63 L34,63 Z" fill="#ffffff" fill-rule="evenodd"></path><path d="M108,36 L108,70 C108,80.5 100,88 89,88 C79,88 72,82 70,73 L80.5,70 C82,76 85,79 89,79 C94,79 96.5,75.5 96.5,70 L96.5,36 Z" fill="#ffffff"></path><path d="M165,43.5 L165,49 A13,13 0 1 0 152,62 A13,13 0 1 1 139,75 L139,80.5" fill="none" stroke="#ffffff" stroke-width="11.5"></path><text x="90" y="156" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="23" letter-spacing="4.2" text-anchor="middle" fill="#ffffff">ENERGY</text></svg>
+  <button class="who" id="whoBtn" type="button">[Engineer name] · [ECS card no.]</button>
+</div>
+<div class="accent"></div>
+<div class="netbar">
+  <span id="dot" class="dot"></span><span id="netxt">Online</span>
+  <span id="pill" class="pill hidden"></span>
+  <span class="sp"></span>
+  <button class="tbtn" id="netbtn">Go offline</button>
+  <button class="tbtn hidden" id="syncbtn">Sync now</button>
+</div>
+
+<main>
+  <div id="home">
+    <h1>Forms</h1>
+    <p class="sub">Pick a form. Everything saves on the device first, so signal isn't required.</p>
+    <div id="picker"></div>
+  </div>
+  <div id="runner" class="hidden">
+    <h1 id="ftitle"></h1>
+    <p class="sub" id="fsub"></p>
+    <div class="railwrap">
+      <div class="rail" id="rail"></div>
+      <div class="railbar"><span id="railbarfill"></span></div>
+      <div class="railcap" id="railcap"></div>
+    </div>
+    <div id="alerts"></div>
+    <div id="page"></div>
+  </div>
+  <div id="result" class="hidden"></div>
+</main>
+
+<div class="navbar hidden" id="navbar">
+  <button id="quit">Menu</button>
+  <div class="mid">
+    <button id="prev">Prev</button>
+    <button id="next">Next</button>
+  </div>
+  <button class="go" id="submit">Submit</button>
+</div>
+
+<script>
+/* ============================================================
+   AJS Energy - schema-driven engineer forms
+   Forms are DATA. Add or reorder fields by editing FORMS below;
+   no engine changes needed.
+   ============================================================ */
+
+/* ---------- restrained inline icon set (stroke, currentColor) ---------- */
+const ICON = {
+  camera:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.2"/></svg>',
+  check:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 17.5 20 6.5"/></svg>',
+  chevronDown:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  chevronLeft:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
+  chevronRight:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  pin:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.3"/></svg>',
+  pen:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-.8L19.2 8A2 2 0 0 0 16.4 5L5.2 15.3z"/><path d="M14 7l3 3"/></svg>',
+  shield:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3.2v5.6c0 5-3.4 8-8 9.4-4.6-1.4-8-4.4-8-9.4V6.2Z"/><path d="M9 12l2.2 2.2L15.5 9.5"/></svg>',
+  close:'<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
+};
+
+/* ---------- the AJS Energy charger range ---------- */
+const KW = ['7kW','11kW','22kW (shared)','22kW (per port)'];
+
+const RANGE = {
+  'Alpitronic':{
+    models:[
+      {name:'Hypercharger HYC50',  type:'DC'},
+      {name:'Hypercharger HYC200', type:'DC'},
+      {name:'Hypercharger HYC400', type:'DC'},
+      {name:'Hypercharger HYC1000',type:'DC'}
+    ],
+    /* power module count only asked on the 200 and 400 */
+    variant:{
+      label:'Power modules installed',
+      options:['100kW','200kW','300kW','400kW'],
+      when:m=>['Hypercharger HYC200','Hypercharger HYC400'].includes(m)
+    }
+  },
+  'Autel':{
+    models:[
+      {name:'MaxiCharger AC Compact',     type:'AC'},
+      {name:'MaxiCharger AC Pro',         type:'AC'},
+      {name:'MaxiCharger AC Elite',       type:'AC'},
+      {name:'MaxiCharger AC Ultra',       type:'AC'},
+      {name:'MaxiCharger AC Ultra Street',type:'AC'},
+      {name:'MaxiCharger DC Compact',     type:'DC'},
+      {name:'MaxiCharger DC Fast',        type:'DC'}
+    ],
+    /* kW rating only on the AC units */
+    variant:{label:'kW Rating',options:KW,when:m=>m.includes(' AC ')}
+  },
+  'ChargePoint':{
+    models:[
+      {name:'CP6321B-32A-L5.5',type:'AC',desc:'Pedestal mount, tethered cables'},
+      {name:'CP6121B-32A',     type:'AC',desc:'Pedestal mount, dual socket'},
+      {name:'CP6323B-32A-L5.5',type:'AC',desc:'Wall mount, tethered cables'},
+      {name:'CP6123B-32A',     type:'AC',desc:'Wall mount, dual socket'}
+    ],
+    variant:{label:'kW Rating',options:KW,when:()=>true}
+  },
+  'Rolec':{
+    models:[
+      {name:'Evo',           type:'AC'},
+      {name:'Zura',          type:'AC'},
+      {name:'SecuriCharge',  type:'AC'},
+      {name:'BasicCharge',   type:'AC'},
+      {name:'Quantum',       type:'AC'},
+      {name:'UltraCharge 80',type:'DC'},
+      {name:'UltraCharge 180',type:'DC'},
+      {name:'UltraCharge 400',type:'DC'}
+    ],
+    /* no kW question on the UltraCharge range */
+    variant:{label:'kW Rating',options:KW,when:m=>!m.startsWith('UltraCharge')}
+  }
+};
+
+/* ---------- field shorthands ---------- */
+const T  =(id,label,o={})=>({id,label,type:'text',...o});
+const N  =(id,label,o={})=>({id,label,type:'number',...o});
+const TA =(id,label,o={})=>({id,label,type:'textarea',...o});
+const YN =(id,label,o={})=>({id,label,type:'yesno',...o});
+const YNA=(id,label,o={})=>({id,label,type:'ynna',...o});
+const R  =(id,label,options,o={})=>({id,label,type:'radio',options,...o});
+const P  =(id,label,o={})=>({id,label,type:'photo',...o});
+const MP =(id,label,o={})=>({id,label,type:'multiphoto',...o});
+const SIG=(id,label,o={})=>({id,label,type:'sig',...o});
+const GEO=(id,label,o={})=>({id,label,type:'geo',...o});
+const CHG=(id,o={})=>({id,label:'Charger Manufacturer',type:'charger',...o});
+
+const EARTHING=['TT','TN-S','TN-C-S','IT (Hospital only)'];
+const EARTHED =['Earth Rod','ConduDisc','Integrated PEN Fault Protection',
+  'Separate PEN Fault Protection','Site Earthing System - Indoor Charging',
+  'Site Earthing System - Dedicated TN-S Connection','Other please state'];
+
+/* ============================================================
+   FORM 1 - EV Charge Point Site Validation
+   ============================================================ */
+const SITE_VALIDATION = {
+  id:'site-validation', ref:'SV',
+  title:'EV Charge Point Site Validation',
+  sub:'Post-install validation. One record per site; add a block per charge point.',
+  pages:[
+    {title:'Job and site', sections:[{title:'Job and Site details', fields:[
+      T('job','AJS Energy Job Reference',{req:1}),
+      T('client','Client and client Reference (if applicable)',{req:1}),
+      T('siteName','Site name',{req:1}),
+      TA('siteAddr','Site address',{req:1}),
+      T('siteContact','Site contact',{req:1}),
+      T('contactPhone','Contact phone number',{req:1}),
+      R('workType','Type of work undertaken',
+        ['Maintenance/Service Visit','Build and commission only','Complete Installation'],{req:1}),
+      TA('worksReq','Description of works requested by the client'),
+      TA('worksDone','Description of works carried out',{req:1}),
+      N('bays','Number of EV parking bays related to this work (not total number of EV bays)',{req:1}),
+      N('spareCap','Does the site have capacity with the distribution board for any additional EV points to be installed - please consider potential total electrical load'),
+      R('earthing','What are the site earthing arrangements? (at the incoming supply, not at the EVCPs)',
+        [...EARTHING,'Could not be verified'],{req:1})
+    ]}]},
+
+    {title:'Charge points', sections:[{
+      title:'Charger details', repeat:'charge point', fields:[
+        CHG('mfr',{req:1}),
+        T('serial','Unit Serial Number (For OZEV Compliance)',{req:1}),
+        P('serialPhoto','Photo of Serial number label',{req:1,hint:'Must be attached to the charger'}),
+        P('bayPhoto','Photo of the charging station clearly showing any bays it serves',
+          {req:1,hint:'The photo must show the bays and the charger in the same photo'}),
+        P('connPhoto','Photo of electrical connections within the EV charger (close up)',{req:1}),
+        MP('insidePhotos','Photos of the inside of the EV charger',{req:1}),
+        P('coverPhoto','Photo of EV charger with cover on',
+          {req:1,hint:'Please make sure all the charger is in the photo'}),
+        P('screenPhoto','Photo of the screen of the charger (if applicable)'),
+        MP('signalPhotos','Photo of signal readings, take both from the charger and hand held reader',{req:1}),
+        P('plinthPhoto','Photo of concrete base/plinth',{req:1}),
+        MP('installPhotos','Photos of EV charging electrical installation (cable routes, containment etc)',{req:1}),
+        YNA('latches','Do all latches on the connector holster unlock and lock properly',{req:1}),
+        R('supplyCables','How many input supply cables to the charger?',['1 cable','2 cables'],{req:1}),
+        R('jumper','Has a jumper bar been installed?',
+          ['n/a','Yes - L1-L1','Yes - L1-L2','No, dual supplies'],{req:1}),
+        YNA('siteKey','Does the site manager have a charging station key?',{req:1}),
+        YNA('phaseVolts','Are all phase voltages correct? 400V between phases and 230V phase to neutral',{req:1}),
+        YNA('internalBreakers','Have all the internal breakers in the EV charger been left on?',{req:1}),
+        YNA('wizard','Have you completed the installation wizard?',{req:1}),
+        T('mcb','What size protective device/MCB has been fitted?',{req:1}),
+        YNA('bonds','Have all ground/cross bonds been fitted',{req:1}),
+        YNA('terminals','All wiring has been fully inserted into the terminal block and all electrical connections are clean and snug',{req:1}),
+        YNA('clean','Electrical enclosures are clean and free of wiring strands and metal shavings',{req:1}),
+        YNA('covers','All covers are installed and all fasteners are tightened',{req:1}),
+        YNA('outputCable','The output cable wiring is properly installed. The small blue wire on the output cable is fully inserted into the connector on the terminal block. Wires are not laying parallel to the face.',{req:1})
+      ]}]},
+
+    {title:'Electrical', sections:[{title:'Electrical installation', fields:[
+      YNA('brkSize','Have the correct size breakers been installed and do they match the information set up in the chargers?'),
+      YNA('brkTorque','Have all connections in the Distribution board that form part of this work been torqued to the correct rating?'),
+      YNA('brkFitted','Are all breakers fitted correctly?'),
+      YNA('dbEarth','Does the distribution board have correct means of earthing in line with BS7671?'),
+      YNA('blanks','Have all the blanks been fitted into the distribution board correctly with no gaps?'),
+      YNA('labels','Have all out going cables been labelled at both ends?'),
+      MP('dbPhotos','Please take photos of the general distribution board installation',{req:1})
+    ]}]},
+
+    {title:'Sign off', sections:[{title:'Section 3', fields:[
+      YNA('tidy','The parking area is clean and free of all packaging and all debris have been cleaned away',{req:1}),
+      MP('tidyPhotos','Photos of work area clean and tidy',{req:1}),
+      R('otherEvcps','Please visually inspect all other EVCPs on site before leaving. Tick to indicate you have done so.',
+        ['All EVCPs on site visually inspected.','No other EVCPs onsite'],{req:1}),
+      TA('addInfo','Please note any additional information'),
+      SIG('clientSig',"Client's signature",{req:1})
+    ]}]}
+  ]
+};
+
+/* ============================================================
+   FORM 2 - EVCP Safety Inspection
+   ============================================================ */
+const SAFETY_INSPECTION = {
+  id:'safety-inspection', ref:'SI',
+  title:'EVCP Safety Inspection Form',
+  sub:'Periodic safety inspection of existing charge points.',
+  pages:[
+    {title:'Job and site', sections:[{title:'Job and Site details', fields:[
+      T('job','AJS Energy Job Reference',{req:1}),
+      T('client','Client',{req:1}),
+      T('clientRef','Client Reference (if applicable)',{req:1}),
+      T('siteName','Site Name',{req:1}),
+      TA('siteAddr','Site Address',{req:1})
+    ]}]},
+
+    {title:'Charge points', sections:[{
+      title:'Charger details', repeat:'charge point', fields:[
+        T('evcpRef','EVCP name/reference if applicable'),
+        GEO('geo','Location of the EVCP (Geotag)'),
+        CHG('mfr',{req:1}),
+        MP('bayPhotos','Photo of the EVCP including any relevant parking bays'),
+        YN('baysMarked','Are the bays clearly marked "for EV use only" or similar?'),
+        P('coverPhoto','Photo of EVCP with cover on',{req:1}),
+        P('plinthPhoto','Photo of concrete base/plinth (if applicable)'),
+        YNA('ventilation','Is there adequate space for ventilation/cooling and to open all doors or panels?',{req:1}),
+        YN('lighting','Is there adequate lighting for safe use of the EVCP?',{req:1}),
+        YN('impact','Protection from impact to comply with BS7671 regulation 722.512.2.203?'),
+        YN('heights','Is the height of controls and sockets between 0.75m and 1.20m, and screens between 1.20m and 1.40m?',{req:1}),
+        YN('wheelchair','Is the EVCP accessible for wheelchair users?',{req:1}),
+        YN('undamaged','Is the unit free of any damage, level and securely fixed?',{req:1}),
+        YN('torqued','Is all the mounting hardware torqued to the proper specifications?'),
+        T('serial','Unit Serial Number',{req:1}),
+        P('serialPhoto','Photo of Serial number label',{req:1,hint:'Must be attached to the charger'}),
+        P('connPhoto','Photo of electrical connections within the EVCP (close up)',{req:1}),
+        MP('insidePhotos','Photos of the inside of the EVCP',{req:1}),
+        P('screenPhoto','Photo of the screen of the EVCP (if applicable)'),
+        MP('signalPhotos','Photo of signal readings, take both from the EVCP and hand held reader',{req:1}),
+        TA('sourceSupply','Locate and identify the source of supply'),
+        R('earthing','What are the site earthing arrangements? (at the incoming supply, not at the EVCP)',
+          EARTHING,{req:1}),
+        R('earthed','How has the EVCP been earthed',EARTHED),
+        MP('earthPhotos','Photos of EVCP earthing system, or PEN fault device (if required)'),
+        YN('simultaneous','Simultaneous Contact Assessment – is it possible to touch the EVCP/vehicle connected, and another metallic item that is connected to a different earthing system? (Items such as lamp posts and building cladding)',{req:1}),
+        T('dbName','Distribution board name and location'),
+        T('circuitNo','Circuit number'),
+        N('ocpdRating','Overcurrent protective device rating (Amps)'),
+        T('ocpdType','Overcurrent protective device type'),
+        YNA('rcdType','Has the correct type of RCD been installed in relation to the charging equipment (Type B for Mode 3 charging equipment, unless the equipment has in-built DC residual current protection; Type A or Type F in all other cases)? If the correct RCD has not been installed please isolate the power supply'),
+        MP('rcdPhotos','Photos of RCD protection'),
+        TA('obs1','Observations'),
+        T('rcdTimes','RCD test times'),
+        T('zs','Earth fault loop impedance reading (Zs)',{req:1}),
+        MP('generalPhotos','Please take photos of the general installation, labelling, car park etc',{req:1}),
+        YN('safeToOperate','Following these inspections, is the EVCP safe to remain in operation? If not, please isolate the power supply',{req:1,gate:'No'}),
+        TA('obs2','Any general observations about the EVCP')
+      ]}]},
+
+    {title:'Sign off', sections:[{title:'Signatures', fields:[
+      TA('addInfo','Please note any additional information'),
+      T('engName','Engineers name',{req:1}),
+      SIG('engSig','Signature',{req:1}),
+      T('clientName',"Client's name"),
+      SIG('clientSig','Signature'),
+      {id:'date',label:'Date',type:'date',req:1},
+      {id:'time',label:'Time',type:'time',req:1}
+    ]}]}
+  ]
+};
+
+/* ============================================================
+   FORM 3 - Civil Engineering Document
+   ============================================================ */
+const CIVILS = {
+  id:'civils', ref:'Q',
+  title:'Civil Engineering Document',
+  sub:'Measured quantities for groundworks, bases and protection.',
+  pages:[
+    {title:'Quote', sections:[{title:'Quote Details', fields:[
+      T('quoteNo','AJS Energy Quote Reference'),
+      TA('siteAddr','Site Address',{req:1})
+    ]}]},
+
+    {title:'Ground works', sections:[{title:'Ground Works', fields:[
+      N('softDig','Soft Dig (m) Grass, Soil, Gravel - includes 110mm cable duct and warning TILE TAPE',{req:1}),
+      N('hardTarmac','Hard Dig (m) Tarmac - 110mm cable duct and warning TILE TAPE',{req:1}),
+      N('hardConcrete','Hard Dig (m) Concrete - includes 110mm cable duct and warning TILE TAPE',{req:1}),
+      N('hardReinforced','Hard Dig (m) Reinforced Concrete - includes 110mm cable duct and warning TILE TAPE',{req:1}),
+      N('blockPaving','Block Paving (m) - includes 110mm cable duct and TILE TAPE',{req:1}),
+      N('slabPaving','Slab Paving (m) - includes 110mm cable duct and TILE TAPE',{req:1}),
+      YN('chambers','Are Cable Access Chambers Required?',{req:1}),
+      N('duct110','Additional 110mm Ducting (m) alongside included ducting. No additional digging required.',{req:1}),
+      N('duct63','Additional 63mm Ducting (m) alongside included ducting. No additional digging required.',{req:1})
+    ]}]},
+
+    {title:'Bases', sections:[
+      {title:'EVCP Mounting Bases', fields:[
+        YN('basesReq','EVCP Mounting Bases Required?',{req:1}),
+        YN('ajsPrecast','AJS Energy to Provide Precast Bases',{req:1}),
+        N('acBaseQty','AC Charger Base Qty',{req:1}),
+        YN('acEdging','Precast Edging Required? (AC bases)',{req:1}),
+        N('dcBaseQty','DC Charger Base Qty',{req:1}),
+        YN('dcEdging','Precast Edging Required? (DC bases)',{req:1})
+      ]},
+      {title:'GRP Enclosure', fields:[
+        YN('grpBase','GRP Enclosure Base Required?',{req:1})
+      ]}
+    ]},
+
+    {title:'Protection', sections:[
+      {title:'Protective Barriers', fields:[
+        N('ssBollards','Supply and Install Stainless Steel Bollards (qty)',{req:1}),
+        N('hoopBarriers','Supply and Install Hoop Barriers (qty)',{req:1}),
+        N('clientBollards','Install Client Supplied Bollards (qty)',{req:1}),
+        N('clientHoops','Install Client Supplied Hoop Barrier (qty)',{req:1}),
+        T('barrierOther','Other - Please Specify')
+      ]},
+      {title:'Other Details', fields:[
+        YN('signPosts','Install EV Parking Sign Posts (AJS Energy to free issue post/signs)'),
+        YN('welfare','Is welfare available on site?'),
+        TA('notes','Additional Notes')
+      ]},
+      {title:'Images', fields:[
+        P('aerial','Aerial View',{req:1}),
+        MP('multi','Multi Photo',{req:1})
+      ]}
+    ]}
+  ]
+};
+
+const FORMS=[SITE_VALIDATION,SAFETY_INSPECTION,CIVILS];
+
+/* ============================================================
+   ENGINE
+   ============================================================ */
+let form=null, page=0, seen=new Set(), V={}, G={}, showMiss=false;
+let online=true, queue=0;
+let collapsed=new Set();
+let prevGateCount=0;
+let lastPhotoKey=null, lastPhotoCount=0;
+const el=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const key=(sIdx,fid,r)=>r===undefined?fid:'g'+sIdx+'_'+r+'_'+fid;
+
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2000);}
+
+/* ---------- engineer identity: placeholder, editable on device ---------- */
+const WHO_KEY='ajsEngineerId';
+function loadWho(){ try{return JSON.parse(localStorage.getItem(WHO_KEY));}catch(e){return null;} }
+function renderWho(){
+  const w=loadWho();
+  el('whoBtn').textContent = (w&&w.name) ? w.name+' · '+(w.ecs||'ECS -') : '[Engineer name] · [ECS card no.]';
+}
+el('whoBtn').onclick=()=>{
+  const cur=loadWho()||{};
+  const name=prompt('Engineer name',cur.name||'');
+  if(name===null) return;
+  const ecs=prompt('ECS card number',cur.ecs||'');
+  if(ecs===null) return;
+  try{localStorage.setItem(WHO_KEY,JSON.stringify({name:name.trim(),ecs:ecs.trim()}));}catch(e){}
+  renderWho();
+};
+
+/* ---------- network ---------- */
+function net(){
+  el('dot').className='dot'+(online?'':' off');
+  el('netxt').textContent=online?'Online':'Offline - capture continues';
+  el('netbtn').textContent=online?'Go offline':'Go online';
+  el('pill').classList.toggle('hidden',!queue);
+  el('pill').textContent=queue+(queue===1?' record waiting':' records waiting');
+  el('syncbtn').classList.toggle('hidden',!(online&&queue));
+}
+el('netbtn').onclick=()=>{online=!online;net();};
+el('syncbtn').onclick=()=>{const n=queue;queue=0;net();toast(n+' record(s) synced');};
+
+/* ---------- picker ---------- */
+function renderPicker(){
+  el('picker').innerHTML='';
+  FORMS.forEach((f,i)=>{
+    const b=document.createElement('button');
+    b.className='pick';
+    const n=f.pages.reduce((t,p)=>t+p.sections.reduce((s,x)=>s+x.fields.length,0),0);
+    b.innerHTML='<b>'+esc(f.title)+'</b><small>'+esc(f.sub)+' · '+n+' fields across '+
+                f.pages.length+' pages</small>';
+    b.onclick=()=>open(i);
+    el('picker').appendChild(b);
+  });
+}
+
+function open(i){
+  form=FORMS[i]; page=0; seen=new Set([0]); V={}; G={}; showMiss=false; collapsed=new Set();
+  el('home').classList.add('hidden');
+  el('result').classList.add('hidden');
+  el('runner').classList.remove('hidden');
+  el('navbar').classList.remove('hidden');
+  el('ftitle').textContent=form.title;
+  el('fsub').textContent=form.sub;
+  /* one repeat instance to start */
+  form.pages.forEach((p,pi)=>p.sections.forEach((s,si)=>{
+    if(s.repeat) G[pi+'_'+si]=[0];
+  }));
+  draw();
+}
+
+el('quit').onclick=()=>{
+  el('runner').classList.add('hidden'); el('result').classList.add('hidden');
+  el('navbar').classList.add('hidden'); el('home').classList.remove('hidden');
+  window.scrollTo(0,0);
+};
+el('prev').onclick=()=>{if(page>0){page--;seen.add(page);draw();window.scrollTo(0,0);}};
+el('next').onclick=()=>{if(page<form.pages.length-1){page++;seen.add(page);draw();window.scrollTo(0,0);}};
+
+/* ---------- page completeness, for the stepper's done/seen/now states ---------- */
+function pageMissing(pi){
+  let n=0;
+  walk((f,si,r,fpi)=>{ if(fpi===pi && f.req && !filled(key(si,f.id,r),f)) n++; });
+  return n;
+}
+
+/* ---------- repeat-block summary strip, shown once a block is collapsed ---------- */
+function repSummary(s,si,r){
+  const chgF=s.fields.find(f=>f.type==='charger');
+  const serF=s.fields.find(f=>f.id==='serial');
+  const bits=[];
+  if(chgF){
+    const k=key(si,chgF.id,r);
+    if(V[k]) bits.push(V[k]+(V[k+'_model']?' '+V[k+'_model']:''));
+  }
+  if(serF){
+    const k=key(si,serF.id,r);
+    if(V[k]) bits.push('S/N '+V[k]);
+  }
+  return bits.join(' · ');
+}
+
+/* ---------- draw ---------- */
+function draw(){
+  el('rail').innerHTML=form.pages.map((p,i)=>{
+    const isNow=i===page, isSeen=seen.has(i);
+    const isDone=isSeen&&!isNow&&pageMissing(i)===0;
+    const cls=isNow?'now':isDone?'done':isSeen?'seen':'';
+    return '<button data-p="'+i+'" class="'+cls+'">'+(isDone?ICON.check:'')+
+           '<span>'+esc(p.title)+'</span></button>';
+  }).join('');
+  el('rail').querySelectorAll('[data-p]').forEach(b=>
+    b.onclick=()=>{page=+b.dataset.p;seen.add(page);draw();window.scrollTo(0,0);});
+  el('railbarfill').style.width=Math.round(((page+1)/form.pages.length)*100)+'%';
+  el('railcap').textContent='Step '+(page+1)+' of '+form.pages.length+' - '+form.pages[page].title;
+
+  el('prev').disabled=page===0;
+  el('next').disabled=page===form.pages.length-1;
+
+  const host=el('page'); host.innerHTML='';
+  form.pages[page].sections.forEach((s,si)=>{
+    const wrap=document.createElement('div');
+    wrap.className='sect';
+    wrap.innerHTML='<h2>'+esc(s.title)+'</h2>';
+    const body=document.createElement('div'); body.className='body';
+
+    if(s.repeat){
+      const rows=G[page+'_'+si];
+      rows.forEach((r,idx)=>{
+        const rk=page+'_'+si+'_'+r;
+        const isCollapsed=collapsed.has(rk);
+        const rep=document.createElement('div'); rep.className='repeat'+(isCollapsed?' collapsed':'');
+        const head=document.createElement('div'); head.className='rhead';
+
+        const tog=document.createElement('button'); tog.type='button'; tog.className='rtoggle';
+        const summary=isCollapsed?repSummary(s,si,r):'';
+        tog.innerHTML=ICON.chevronDown+'<span class="rtitle"><b>'+
+          s.repeat.replace(/^./,c=>c.toUpperCase())+' '+(idx+1)+'</b>'+
+          (isCollapsed?'<span class="rsum">'+esc(summary||'Not started')+'</span>':'')+'</span>';
+        tog.onclick=()=>{ if(isCollapsed) collapsed.delete(rk); else collapsed.add(rk); draw(); };
+        head.appendChild(tog);
+
+        if(rows.length>1){
+          const rm=document.createElement('button'); rm.type='button'; rm.className='rremove';
+          rm.textContent='Remove';
+          rm.onclick=()=>{G[page+'_'+si]=rows.filter(x=>x!==r);collapsed.delete(rk);draw();};
+          head.appendChild(rm);
+        }
+        rep.appendChild(head);
+        if(!isCollapsed) s.fields.forEach(f=>rep.appendChild(field(f,si,r)));
+        body.appendChild(rep);
+      });
+      const add=document.createElement('button');
+      add.type='button'; add.className='addnew';
+      add.innerHTML=ICON.plus+'<span>Add '+esc(s.repeat)+'</span>';
+      add.onclick=()=>{rows.push(Math.max(...rows)+1);draw();
+        toast('Another '+s.repeat+' added');};
+      body.appendChild(add);
+    } else {
+      s.fields.forEach(f=>body.appendChild(field(f,si)));
+    }
+    wrap.appendChild(body); host.appendChild(wrap);
+  });
+  renderAlerts();
+}
+
+/* ---------- one field ---------- */
+function field(f,si,r){
+  const k=key(si,f.id,r);
+  const d=document.createElement('div');
+  d.className='f'+(showMiss&&f.req&&!filled(k,f)?' miss':'');
+
+  const lab=document.createElement('label');
+  lab.innerHTML=(f.req?'<span class="star">*</span>':'')+esc(f.label)+
+                (f.hint?'<span class="hint">'+esc(f.hint)+'</span>':'');
+  d.appendChild(lab);
+
+  const set=(v)=>{V[k]=v;};
+
+  switch(f.type){
+    case 'text': case 'number': case 'date': case 'time': {
+      const i=document.createElement('input');
+      i.type=f.type==='number'||f.num?'number':f.type;
+      if(f.type==='date'&&!V[k]) V[k]=new Date().toISOString().slice(0,10);
+      if(f.type==='time'&&!V[k]) V[k]=new Date().toTimeString().slice(0,5);
+      i.value=V[k]||''; i.placeholder='enter here';
+      i.oninput=e=>{set(e.target.value);renderAlerts();};
+      d.appendChild(i); break;
+    }
+    case 'textarea': {
+      const t=document.createElement('textarea'); t.rows=3; t.value=V[k]||'';
+      t.oninput=e=>{set(e.target.value);renderAlerts();};
+      d.appendChild(t); break;
+    }
+    case 'yesno': case 'ynna': {
+      const opts=f.type==='ynna'?['N/A','Yes','No']:['Yes','No'];
+      const g=document.createElement('div'); g.className='seg';
+      opts.forEach(o=>{
+        const b=document.createElement('button');
+        b.textContent=o;
+        b.className=V[k]===o?'on'+(o==='No'?' no':o==='N/A'?' na':''):'';
+        b.onclick=()=>{V[k]=V[k]===o?null:o;draw();};
+        g.appendChild(b);
+      });
+      d.appendChild(g); break;
+    }
+    case 'radio': {
+      const g=document.createElement('div'); g.className='radios';
+      f.options.forEach(o=>{
+        const b=document.createElement('button');
+        b.textContent=o; b.className=V[k]===o?'on':'';
+        b.onclick=()=>{V[k]=V[k]===o?null:o;draw();};
+        g.appendChild(b);
+      });
+      d.appendChild(g); break;
+    }
+    case 'geo': {
+      const g=document.createElement('div'); g.className='seg';
+      const b=document.createElement('button');
+      b.innerHTML=ICON.pin+'<span>'+(V[k]?esc(V[k]):'Capture location')+'</span>';
+      b.className=V[k]?'on':'';
+      b.onclick=()=>{
+        b.innerHTML=ICON.pin+'<span>Locating…</span>';
+        if(!navigator.geolocation){V[k]='unavailable on this device';draw();return;}
+        navigator.geolocation.getCurrentPosition(
+          p=>{V[k]=p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5);draw();},
+          ()=>{V[k]='permission denied';draw();},{timeout:8000});
+      };
+      g.appendChild(b); d.appendChild(g); break;
+    }
+    case 'photo': case 'multiphoto': {
+      const many=f.type==='multiphoto';
+      if(!V[k]) V[k]=[];
+      const cams=document.createElement('div'); cams.className='cams';
+      const markNew = k===lastPhotoKey;
+      V[k].forEach((p,i)=>{
+        const isNew = markNew && i>=V[k].length-lastPhotoCount;
+        const th=document.createElement('div'); th.className='thumb'+(isNew?' new':'');
+        const img=document.createElement('img'); img.src=p.url; img.alt=f.label;
+        const ok=document.createElement('span'); ok.className='thumb-ok'; ok.innerHTML=ICON.check;
+        const x=document.createElement('button'); x.className='thumb-rm'; x.title='Remove';
+        x.innerHTML=ICON.close;
+        x.onclick=()=>{V[k].splice(i,1);draw();};
+        th.appendChild(img); th.appendChild(ok); th.appendChild(x); cams.appendChild(th);
+      });
+      if(markNew){ lastPhotoKey=null; lastPhotoCount=0; }
+      if(many||V[k].length===0){
+        const add=document.createElement('button');
+        add.type='button'; add.className='addcam';
+        add.innerHTML=ICON.camera+'<span>'+(many?'Add photos':'Add photo')+'</span>';
+        add.onclick=()=>grab(k,many);
+        cams.appendChild(add);
+      }
+      d.appendChild(cams);
+      if(V[k].length){
+        const kb=document.createElement('div'); kb.className='kb';
+        const a=V[k].reduce((t,p)=>t+p.after,0), b=V[k].reduce((t,p)=>t+p.before,0);
+        kb.textContent=V[k].length+' image(s) · '+a+' KB to upload, down from '+b+' KB';
+        d.appendChild(kb);
+      }
+      break;
+    }
+    case 'sig': {
+      const w=document.createElement('div'); w.className='sigwrap';
+      const c=document.createElement('canvas');
+      const bar=document.createElement('div'); bar.className='sigbar';
+      bar.innerHTML='<span class="signote">'+ICON.pen+'<span>'+
+        (V[k]?'Signed':'Sign above with finger or stylus')+'</span></span>';
+      const clr=document.createElement('button'); clr.textContent='Clear';
+      clr.onclick=()=>{V[k]=null;draw();};
+      bar.appendChild(clr);
+      w.appendChild(c); w.appendChild(bar); d.appendChild(w);
+      requestAnimationFrame(()=>initSig(c,k));
+      break;
+    }
+    case 'charger': {
+      /* manufacturer -> model -> variant, per the AJS range */
+      const mk=k, modk=k+'_model', vark=k+'_variant';
+      const s1=document.createElement('select');
+      s1.innerHTML='<option value="">Select List Value(s)</option>'+
+        Object.keys(RANGE).map(m=>'<option'+(V[mk]===m?' selected':'')+'>'+m+'</option>').join('');
+      s1.onchange=e=>{V[mk]=e.target.value;V[modk]=null;V[vark]=null;draw();};
+      d.appendChild(s1);
+
+      if(V[mk]){
+        const models=RANGE[V[mk]].models;
+        const l2=document.createElement('label');
+        l2.style.cssText='margin:12px 0 7px';
+        l2.innerHTML='<span class="star">*</span>Model';
+        d.appendChild(l2);
+        const g=document.createElement('div'); g.className='radios';
+        models.forEach(m=>{
+          const b=document.createElement('button');
+          b.innerHTML=esc(m.name)+(m.desc?'<span class="hint">'+esc(m.desc)+'</span>':'')+
+                      '<span class="hint">'+m.type+'</span>';
+          b.className=V[modk]===m.name?'on':'';
+          b.onclick=()=>{V[modk]=V[modk]===m.name?null:m.name;V[vark]=null;draw();};
+          g.appendChild(b);
+        });
+        d.appendChild(g);
+
+        const vr=RANGE[V[mk]].variant;
+        if(V[modk]&&vr&&vr.when(V[modk])){
+          const l3=document.createElement('label');
+          l3.style.cssText='margin:14px 0 7px';
+          l3.innerHTML='<span class="star">*</span>'+esc(vr.label);
+          d.appendChild(l3);
+          const g3=document.createElement('div'); g3.className='radios';
+          vr.options.forEach(o=>{
+            const b=document.createElement('button');
+            b.textContent=o; b.className=V[vark]===o?'on':'';
+            b.onclick=()=>{V[vark]=V[vark]===o?null:o;draw();};
+            g3.appendChild(b);
+          });
+          d.appendChild(g3);
+        }
+      }
+      break;
+    }
+  }
+  return d;
+}
+
+/* ---------- signature pad ---------- */
+function initSig(c,k){
+  const dpr=window.devicePixelRatio||1;
+  const w=c.clientWidth||300, h=130;
+  c.width=w*dpr; c.height=h*dpr;
+  const x=c.getContext('2d');
+  x.scale(dpr,dpr); x.lineWidth=2; x.lineCap='round';
+  x.strokeStyle='#05618e';
+  if(V[k]){const i=new Image();i.onload=()=>x.drawImage(i,0,0,w,h);i.src=V[k];}
+  let drawing=false;
+  const pt=e=>{const r=c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];};
+  c.onpointerdown=e=>{drawing=true;c.setPointerCapture(e.pointerId);
+    const[a,b]=pt(e);x.beginPath();x.moveTo(a,b);};
+  c.onpointermove=e=>{if(!drawing)return;const[a,b]=pt(e);x.lineTo(a,b);x.stroke();};
+  c.onpointerup=()=>{if(!drawing)return;drawing=false;V[k]=c.toDataURL('image/png');
+    renderAlerts();};
+}
+
+/* ---------- photo capture with on-device downscale ---------- */
+function grab(k,many){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*'; inp.capture='environment'; inp.multiple=!!many;
+  inp.onchange=()=>{
+    const files=[...inp.files]; let done=0;
+    files.forEach(f=>{
+      const before=Math.round(f.size/1024);
+      const img=new Image();
+      img.onload=()=>{
+        const max=1600, sc=Math.min(1,max/Math.max(img.width,img.height));
+        const c=document.createElement('canvas');
+        c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        const url=c.toDataURL('image/jpeg',0.8);
+        V[k].push({name:f.name,url,before,after:Math.round(url.length*.75/1024)});
+        if(++done===files.length){
+          lastPhotoKey=k; lastPhotoCount=files.length;
+          draw();
+          if(!online){queue++;net();}
+        }
+      };
+      img.src=URL.createObjectURL(f);
+    });
+  };
+  inp.click();
+}
+
+/* ---------- validation and safety gates ---------- */
+function filled(k,f){
+  const v=V[k];
+  if(f.type==='photo'||f.type==='multiphoto') return Array.isArray(v)&&v.length>0;
+  if(f.type==='charger'){
+    if(!v||!V[k+'_model']) return false;
+    const vr=RANGE[v].variant;
+    if(vr&&vr.when(V[k+'_model'])&&!V[k+'_variant']) return false;
+    return true;
+  }
+  return v!==undefined&&v!==null&&String(v).trim()!=='';
+}
+
+function walk(cb){
+  form.pages.forEach((p,pi)=>p.sections.forEach((s,si)=>{
+    if(s.repeat) (G[pi+'_'+si]||[]).forEach(r=>s.fields.forEach(f=>cb(f,si,r,pi)));
+    else s.fields.forEach(f=>cb(f,si,undefined,pi));
+  }));
+}
+
+function missing(){
+  const out=[];
+  walk((f,si,r,pi)=>{
+    if(f.req&&!filled(key(si,f.id,r),f))
+      out.push({label:f.label,page:pi,rep:r});
+  });
+  return out;
+}
+
+/* any Yes/No field flagged with gate:'No' that reads No triggers an isolate warning */
+function gates(){
+  const out=[];
+  walk((f,si,r)=>{
+    if(f.gate&&V[key(si,f.id,r)]===f.gate) out.push(f.label);
+    if(f.id==='rcdType'&&V[key(si,f.id,r)]==='No')
+      out.push('Incorrect RCD type recorded - isolate the power supply');
+    if(f.id==='safeToOperate'&&V[key(si,f.id,r)]==='No')
+      out.push('EVCP recorded as unsafe to remain in operation - isolate the power supply');
+  });
+  return [...new Set(out)];
+}
+
+function renderAlerts(){
+  const g=gates(), m=showMiss?missing():[];
+  let html='';
+  if(g.length){
+    const enter=prevGateCount===0?' enter':'';
+    html+='<div class="alert danger'+enter+'"><div class="hazardstripe"></div>'+
+      '<b>'+ICON.shield+'<span>Action required on site</span></b>'+
+      '<ul>'+g.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>';
+  }
+  prevGateCount=g.length;
+  if(m.length) html+='<div class="alert"><b>'+m.length+
+    ' required field(s) outstanding</b><ul>'+
+    m.slice(0,8).map(x=>'<li>'+esc(x.label)+'</li>').join('')+
+    (m.length>8?'<li>and '+(m.length-8)+' more…</li>':'')+'</ul></div>';
+  el('alerts').innerHTML=html;
+}
+
+/* ---------- submit ---------- */
+el('submit').onclick=()=>{
+  showMiss=true;
+  const m=missing();
+  draw();
+  if(m.length){
+    page=m[0].page; seen.add(page); draw();
+    window.scrollTo(0,0);
+    toast(m.length+' required field(s) missing');
+    return;
+  }
+  /* build the payload that would POST to Supabase */
+  const rows=[]; let photos=0;
+  walk((f,si,r)=>{
+    const k=key(si,f.id,r), v=V[k];
+    if(f.type==='photo'||f.type==='multiphoto'){ photos+=(v||[]).length; return; }
+    if(f.type==='sig'){ if(v) rows.push([f.label+(r!==undefined?' ['+(r+1)+']':''),'signed']); return; }
+    if(f.type==='charger'){
+      if(v) rows.push(['Charger'+(r!==undefined?' ['+(r+1)+']':''),
+        v+' '+(V[k+'_model']||'')+(V[k+'_variant']?' · '+V[k+'_variant']:'')]);
+      return;
+    }
+    if(v!==undefined&&v!==null&&String(v).trim()!=='')
+      rows.push([f.label+(r!==undefined?' ['+(r+1)+']':''),String(v)]);
+  });
+
+  /* AJS Energy reference: AJSE-<form>-<serial>. Swap the random serial for a
+     server-issued sequence once wired to Supabase so references never collide. */
+  const ref='AJSE-'+form.ref+'-'+String(Math.floor(1+Math.random()*9999)).padStart(4,'0');
+  const payload={reference:ref,form:form.id,submitted_at:new Date().toISOString(),
+    submitted_offline:!online,photo_count:photos,
+    values:Object.fromEntries(rows.slice(0,12))};
+
+  el('runner').classList.add('hidden');
+  el('result').classList.remove('hidden');
+  el('result').innerHTML='<div class="out"><h2>'+esc(form.title)+' submitted</h2>'+
+    '<div class="sub">Reference '+ref+' · '+rows.length+' values · '+photos+' photos'+
+    (online?'':' · queued on device')+'</div>'+
+    '<dl>'+rows.slice(0,14).map(([k,v])=>
+      '<dt>'+esc(k)+'</dt><dd>'+esc(v.length>70?v.slice(0,70)+'…':v)+'</dd>').join('')+
+    '</dl>'+(rows.length>14?'<div class="kb">and '+(rows.length-14)+' more values</div>':'')+
+    '<pre>'+esc(JSON.stringify(payload,null,2))+'</pre></div>';
+  if(!online){queue++;net();}
+  window.scrollTo(0,0);
+};
+
+el('prev').innerHTML=ICON.chevronLeft+'<span>Prev</span>';
+el('next').innerHTML='<span>Next</span>'+ICON.chevronRight;
+el('submit').innerHTML=ICON.check+'<span>Submit</span>';
+
+renderWho(); renderPicker(); net();
+</script>

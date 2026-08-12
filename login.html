@@ -1,0 +1,134 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AJS Energy - sign in</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCw2KSI+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjU2IiBoZWlnaHQ9IjEyNCIgZmlsbD0iIzAwNUY4QyI+PC9yZWN0PjxyZWN0IHg9IjYyIiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iMTI0IiBmaWxsPSIjMDA1RjhDIj48L3JlY3Q+PHJlY3QgeD0iMTI0IiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iMTI0IiBmaWxsPSIjMDA1RjhDIj48L3JlY3Q+PHJlY3QgeD0iMCIgeT0iMTMwIiB3aWR0aD0iMTgwIiBoZWlnaHQ9IjM4IiBmaWxsPSIjMDA4NTlGIj48L3JlY3Q+PHBhdGggZD0iTTQsODggTDIzLDM2IEwzMywzNiBMNTIsODggTDQxLjUsODggTDM4LjYsNzIgTDE3LjQsNzIgTDE0LjUsODggWiBNMjgsNDUgTDIyLDYzIEwzNCw2MyBaIiBmaWxsPSIjZmZmZmZmIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjwvcGF0aD48cGF0aCBkPSJNMTA4LDM2IEwxMDgsNzAgQzEwOCw4MC41IDEwMCw4OCA4OSw4OCBDNzksODggNzIsODIgNzAsNzMgTDgwLjUsNzAgQzgyLDc2IDg1LDc5IDg5LDc5IEM5NCw3OSA5Ni41LDc1LjUgOTYuNSw3MCBMOTYuNSwzNiBaIiBmaWxsPSIjZmZmZmZmIj48L3BhdGg+PHBhdGggZD0iTTE2NSw0My41IEwxNjUsNDkgQTEzLDEzIDAgMSAwIDE1Miw2MiBBMTMsMTMgMCAxIDEgMTM5LDc1IEwxMzksODAuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjExLjUiPjwvcGF0aD48L2c+PC9zdmc+">
+<style>
+  :root{
+    --teal:#1886a1;--navy:#05618e;--mist:#e6ebed;
+    --ink:#1c2b30;--line:#c7d3d6;--surface:#fff;--pale:#f4fafb;
+    --danger:#b3261e;--dangerbg:#fdf3f2;
+    --muted:#5d6c72;--faint:#8a959a;
+    --r-sm:4px;--r-md:8px;--r-lg:14px;
+    --sh-sm:0 1px 2px rgba(5,40,50,.08);
+    --sh-lg:0 10px 30px rgba(5,40,50,.24);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--mist);
+       font-size:15px;line-height:1.5;min-height:100vh;display:flex;flex-direction:column}
+  button{font-family:inherit;font-size:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r-sm)}
+  .topbar{background:var(--navy);padding:12px 20px;display:flex;align-items:center;gap:12px}
+  .logo{display:block;height:44px;width:auto;flex:none}
+  .brandtext{font-weight:bold;font-size:19px;letter-spacing:.4px;color:#fff}
+  .brandtext span{color:#a8d4de;font-weight:normal}
+  .accent{height:3px;background:var(--teal)}
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-lg);
+        padding:28px 26px;width:100%;max-width:380px}
+  .card h1{font-size:20px;color:var(--navy);margin:0 0 4px}
+  .card .sub{color:var(--muted);margin:0 0 22px;font-size:13px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:bold;color:var(--navy);margin-bottom:5px}
+  .field input{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:var(--r-sm);
+               font-size:15px;font-family:inherit}
+  .btn{width:100%;background:var(--teal);color:#fff;border:none;border-radius:var(--r-md);
+       padding:12px;font-weight:bold;font-size:15px;box-shadow:var(--sh-sm);margin-top:4px}
+  .btn:hover{background:var(--navy)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .switcher{display:flex;gap:4px;background:var(--mist);border-radius:var(--r-pill,999px);
+            padding:3px;margin-bottom:20px}
+  .switcher button{flex:1;background:none;border:none;padding:8px;border-radius:6px;
+                   font-size:13px;font-weight:bold;color:var(--muted)}
+  .switcher button.on{background:var(--surface);color:var(--navy);box-shadow:var(--sh-sm)}
+  .msg{font-size:13px;border-radius:var(--r-sm);padding:10px 12px;margin-bottom:14px}
+  .msg.err{background:var(--dangerbg);color:var(--danger)}
+  .msg.ok{background:#eafaf1;color:#1c7a4d}
+  .hidden{display:none}
+</style>
+
+<div class="topbar">
+  <svg class="logo" viewBox="0 0 180 124" role="img" aria-label="AJS"><rect x="0" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="62" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="124" y="0" width="56" height="124" fill="#005F8C"></rect><path d="M4,88 L23,36 L33,36 L52,88 L41.5,88 L38.6,72 L17.4,72 L14.5,88 Z M28,45 L22,63 L34,63 Z" fill="#ffffff" fill-rule="evenodd"></path><path d="M108,36 L108,70 C108,80.5 100,88 89,88 C79,88 72,82 70,73 L80.5,70 C82,76 85,79 89,79 C94,79 96.5,75.5 96.5,70 L96.5,36 Z" fill="#ffffff"></path><path d="M165,43.5 L165,49 A13,13 0 1 0 152,62 A13,13 0 1 1 139,75 L139,80.5" fill="none" stroke="#ffffff" stroke-width="11.5"></path></svg>
+  <div class="brandtext">AJS <span>Energy</span></div>
+</div>
+<div class="accent"></div>
+
+<main>
+  <div class="card">
+    <div class="switcher">
+      <button id="tab-in" class="on" type="button">Sign in</button>
+      <button id="tab-up" type="button">Create account</button>
+    </div>
+    <h1 id="title">Sign in</h1>
+    <p class="sub" id="subtitle">Job portal - staff only.</p>
+    <div id="msg"></div>
+    <form id="form">
+      <div class="field"><label for="email">Email</label><input id="email" type="email" required autocomplete="email"></div>
+      <div class="field"><label for="password">Password</label><input id="password" type="password" required autocomplete="current-password" minlength="6"></div>
+      <div class="field hidden" id="nameField"><label for="fullName">Your name</label><input id="fullName" autocomplete="name"></div>
+      <button class="btn" id="go" type="submit">Sign in</button>
+    </form>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="db.js"></script>
+<script>
+(async function(){
+  const supabase = sb;
+  const el = id => document.getElementById(id);
+  let mode = 'in';
+
+  function setMode(m){
+    mode = m;
+    el('tab-in').classList.toggle('on', m==='in');
+    el('tab-up').classList.toggle('on', m==='up');
+    el('title').textContent = m==='in' ? 'Sign in' : 'Create account';
+    el('subtitle').textContent = m==='in' ? 'Job portal - staff only.' : 'New accounts start as an engineer; a manager upgrades access afterwards.';
+    el('nameField').classList.toggle('hidden', m!=='up');
+    el('go').textContent = m==='in' ? 'Sign in' : 'Create account';
+    el('msg').innerHTML = '';
+  }
+  el('tab-in').onclick = () => setMode('in');
+  el('tab-up').onclick = () => setMode('up');
+
+  // already signed in? skip straight to the jobs list
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = 'jobs.html';
+  });
+
+  el('form').onsubmit = async (e) => {
+    e.preventDefault();
+    const email = el('email').value.trim();
+    const password = el('password').value;
+    el('go').disabled = true;
+    el('msg').innerHTML = '';
+
+    if (mode === 'in') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        el('msg').innerHTML = '<div class="msg err">'+error.message+'</div>';
+        el('go').disabled = false;
+        return;
+      }
+      window.location.href = 'jobs.html';
+      return;
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email, password,
+      options: { data: { full_name: el('fullName').value.trim() } }
+    });
+    el('go').disabled = false;
+    if (error) {
+      el('msg').innerHTML = '<div class="msg err">'+error.message+'</div>';
+      return;
+    }
+    if (data.session) {
+      window.location.href = 'jobs.html';
+      return;
+    }
+    el('msg').innerHTML = '<div class="msg ok">Account created - check your email to confirm it, then sign in.</div>';
+    setMode('in');
+  };
+})();
+</script>
