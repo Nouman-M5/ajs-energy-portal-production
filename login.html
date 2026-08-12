@@ -1,56 +1,72 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AJS Energy - sign in</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCw2KSI+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjU2IiBoZWlnaHQ9IjEyNCIgZmlsbD0iIzAwNUY4QyI+PC9yZWN0PjxyZWN0IHg9IjYyIiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iMTI0IiBmaWxsPSIjMDA1RjhDIj48L3JlY3Q+PHJlY3QgeD0iMTI0IiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iMTI0IiBmaWxsPSIjMDA1RjhDIj48L3JlY3Q+PHJlY3QgeD0iMCIgeT0iMTMwIiB3aWR0aD0iMTgwIiBoZWlnaHQ9IjM4IiBmaWxsPSIjMDA4NTlGIj48L3JlY3Q+PHBhdGggZD0iTTQsODggTDIzLDM2IEwzMywzNiBMNTIsODggTDQxLjUsODggTDM4LjYsNzIgTDE3LjQsNzIgTDE0LjUsODggWiBNMjgsNDUgTDIyLDYzIEwzNCw2MyBaIiBmaWxsPSIjZmZmZmZmIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjwvcGF0aD48cGF0aCBkPSJNMTA4LDM2IEwxMDgsNzAgQzEwOCw4MC41IDEwMCw4OCA4OSw4OCBDNzksODggNzIsODIgNzAsNzMgTDgwLjUsNzAgQzgyLDc2IDg1LDc5IDg5LDc5IEM5NCw3OSA5Ni41LDc1LjUgOTYuNSw3MCBMOTYuNSwzNiBaIiBmaWxsPSIjZmZmZmZmIj48L3BhdGg+PHBhdGggZD0iTTE2NSw0My41IEwxNjUsNDkgQTEzLDEzIDAgMSAwIDE1Miw2MiBBMTMsMTMgMCAxIDEgMTM5LDc1IEwxMzksODAuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjExLjUiPjwvcGF0aD48L2c+PC9zdmc+">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
   :root{
     --teal:#1886a1;--navy:#05618e;--mist:#e6ebed;
     --ink:#1c2b30;--line:#c7d3d6;--surface:#fff;--pale:#f4fafb;
     --danger:#b3261e;--dangerbg:#fdf3f2;
     --muted:#5d6c72;--faint:#8a959a;
-    --r-sm:4px;--r-md:8px;--r-lg:14px;
+    --r-sm:4px;--r-md:8px;--r-lg:16px;--r-pill:999px;
     --sh-sm:0 1px 2px rgba(5,40,50,.08);
-    --sh-lg:0 10px 30px rgba(5,40,50,.24);
+    --sh-lg:0 24px 60px -12px rgba(2,20,28,.5);
+    --glow:0 0 0 4px rgba(24,134,161,.16);
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--mist);
-       font-size:15px;line-height:1.5;min-height:100vh;display:flex;flex-direction:column}
+  html,body{margin:0;min-height:100vh}
+  body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);font-size:15px;line-height:1.5;
+       min-height:100vh;display:flex;flex-direction:column;
+       background:radial-gradient(720px 480px at 18% -8%,rgba(24,134,161,.35),transparent 60%),
+                  linear-gradient(165deg,#03212c 0%,#052a38 46%,#063347 100%);
+       background-attachment:fixed}
   button{font-family:inherit;font-size:inherit;cursor:pointer}
-  :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r-sm)}
-  .topbar{background:var(--navy);padding:12px 20px;display:flex;align-items:center;gap:12px}
-  .logo{display:block;height:44px;width:auto;flex:none}
-  .brandtext{font-weight:bold;font-size:19px;letter-spacing:.4px;color:#fff}
-  .brandtext span{color:#a8d4de;font-weight:normal}
-  .accent{height:3px;background:var(--teal)}
-  main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
-  .card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-lg);
-        padding:28px 26px;width:100%;max-width:380px}
-  .card h1{font-size:20px;color:var(--navy);margin:0 0 4px}
-  .card .sub{color:var(--muted);margin:0 0 22px;font-size:13px}
-  .field{margin-bottom:14px}
-  .field label{display:block;font-size:13px;font-weight:bold;color:var(--navy);margin-bottom:5px}
-  .field input{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:var(--r-sm);
-               font-size:15px;font-family:inherit}
+  :focus-visible{outline:2px solid #5be3ff;outline-offset:2px;border-radius:var(--r-sm)}
+
+  .brand{display:flex;align-items:center;justify-content:center;gap:10px;padding:28px 20px 4px}
+  .brand .logo{display:block;height:36px;width:auto}
+  .brand b{color:#eaf7fa;font-size:15px;font-weight:700;letter-spacing:.2px}
+  .brand b span{color:#7fc3d1;font-weight:400}
+
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:20px 20px 44px}
+  .card{position:relative;background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh-lg);
+        padding:32px 28px;width:100%;max-width:392px}
+  .card::before{content:'';position:absolute;left:28px;right:28px;top:0;height:3px;border-radius:0 0 3px 3px;
+        background:linear-gradient(90deg,var(--teal),#5be3ff)}
+  .card h1{font-size:22px;color:var(--navy);margin:2px 0 4px;font-weight:800;letter-spacing:-.2px}
+  .card .sub{color:var(--muted);margin:0 0 24px;font-size:13.5px}
+  .field{margin-bottom:15px}
+  .field label{display:block;font-size:12.5px;font-weight:bold;color:var(--navy);margin-bottom:6px;
+               text-transform:uppercase;letter-spacing:.3px}
+  .field input{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:var(--r-sm);
+               font-size:15px;font-family:inherit;transition:border-color .15s,box-shadow .15s;background:var(--pale)}
+  .field input:hover{border-color:#a8bcc0}
+  .field input:focus{outline:none;border-color:var(--teal);box-shadow:var(--glow);background:var(--surface)}
   .btn{width:100%;background:var(--teal);color:#fff;border:none;border-radius:var(--r-md);
-       padding:12px;font-weight:bold;font-size:15px;box-shadow:var(--sh-sm);margin-top:4px}
+       padding:13px;font-weight:bold;font-size:15px;letter-spacing:.2px;
+       box-shadow:0 8px 20px -6px rgba(24,134,161,.55);margin-top:6px;transition:background .15s,transform .1s}
   .btn:hover{background:var(--navy)}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-  .switcher{display:flex;gap:4px;background:var(--mist);border-radius:var(--r-pill,999px);
-            padding:3px;margin-bottom:20px}
-  .switcher button{flex:1;background:none;border:none;padding:8px;border-radius:6px;
-                   font-size:13px;font-weight:bold;color:var(--muted)}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+  .switcher{display:flex;gap:4px;background:var(--mist);border-radius:var(--r-pill);
+            padding:3px;margin-bottom:22px}
+  .switcher button{flex:1;background:none;border:none;padding:9px;border-radius:7px;
+                   font-size:13px;font-weight:bold;color:var(--muted);transition:background .15s,color .15s}
   .switcher button.on{background:var(--surface);color:var(--navy);box-shadow:var(--sh-sm)}
-  .msg{font-size:13px;border-radius:var(--r-sm);padding:10px 12px;margin-bottom:14px}
+  .msg{font-size:13px;border-radius:var(--r-sm);padding:10px 12px;margin-bottom:14px;line-height:1.4}
   .msg.err{background:var(--dangerbg);color:var(--danger)}
   .msg.ok{background:#eafaf1;color:#1c7a4d}
+  .foot{text-align:center;font-size:12px;color:#7fa8b3;margin-top:20px}
   .hidden{display:none}
+  @media (max-width:380px){
+    .card{padding:26px 20px;border-radius:12px}
+    main{padding:14px 14px 32px}
+  }
 </style>
 
-<div class="topbar">
-  <svg class="logo" viewBox="0 0 180 124" role="img" aria-label="AJS"><rect x="0" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="62" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="124" y="0" width="56" height="124" fill="#005F8C"></rect><path d="M4,88 L23,36 L33,36 L52,88 L41.5,88 L38.6,72 L17.4,72 L14.5,88 Z M28,45 L22,63 L34,63 Z" fill="#ffffff" fill-rule="evenodd"></path><path d="M108,36 L108,70 C108,80.5 100,88 89,88 C79,88 72,82 70,73 L80.5,70 C82,76 85,79 89,79 C94,79 96.5,75.5 96.5,70 L96.5,36 Z" fill="#ffffff"></path><path d="M165,43.5 L165,49 A13,13 0 1 0 152,62 A13,13 0 1 1 139,75 L139,80.5" fill="none" stroke="#ffffff" stroke-width="11.5"></path></svg>
-  <div class="brandtext">AJS <span>Energy</span></div>
+<div class="brand">
+  <img class="logo" src="ajs-energy-logo.svg" alt="AJS Energy">
 </div>
-<div class="accent"></div>
 
 <main>
   <div class="card">
@@ -69,6 +85,7 @@
     </form>
   </div>
 </main>
+<p class="foot">AJS Energy &middot; engineer and manager access only</p>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="db.js"></script>

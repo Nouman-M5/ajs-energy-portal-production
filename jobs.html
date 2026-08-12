@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AJS Energy - jobs</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCw2KSI+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjU2IiBoZWlnaHQ9IjEyNCIgZmlsbD0iIzAwNUY4QyI+PC9yZWN0PjxyZWN0IHg9IjYyIiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iMTI0IiBmaWxsPSIjMDA1RjhDIj48L3JlY3Q+PHJlY3QgeD0iMTI0IiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iMTI0IiBmaWxsPSIjMDA1RjhDIj48L3JlY3Q+PHJlY3QgeD0iMCIgeT0iMTMwIiB3aWR0aD0iMTgwIiBoZWlnaHQ9IjM4IiBmaWxsPSIjMDA4NTlGIj48L3JlY3Q+PHBhdGggZD0iTTQsODggTDIzLDM2IEwzMywzNiBMNTIsODggTDQxLjUsODggTDM4LjYsNzIgTDE3LjQsNzIgTDE0LjUsODggWiBNMjgsNDUgTDIyLDYzIEwzNCw2MyBaIiBmaWxsPSIjZmZmZmZmIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjwvcGF0aD48cGF0aCBkPSJNMTA4LDM2IEwxMDgsNzAgQzEwOCw4MC41IDEwMCw4OCA4OSw4OCBDNzksODggNzIsODIgNzAsNzMgTDgwLjUsNzAgQzgyLDc2IDg1LDc5IDg5LDc5IEM5NCw3OSA5Ni41LDc1LjUgOTYuNSw3MCBMOTYuNSwzNiBaIiBmaWxsPSIjZmZmZmZmIj48L3BhdGg+PHBhdGggZD0iTTE2NSw0My41IEwxNjUsNDkgQTEzLDEzIDAgMSAwIDE1Miw2MiBBMTMsMTMgMCAxIDEgMTM5LDc1IEwxMzksODAuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjExLjUiPjwvcGF0aD48L2c+PC9zdmc+">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
   :root{
     --teal:#1886a1;--navy:#05618e;--mist:#e6ebed;
@@ -14,70 +14,91 @@
     --sh-md:0 4px 14px rgba(5,40,50,.14);
   }
   *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
   body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--mist);
        font-size:15px;line-height:1.5}
   button{font-family:inherit;font-size:inherit;cursor:pointer}
   :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r-sm)}
-  .topbar{background:var(--navy);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .logo{display:block;height:40px;width:auto;flex:none}
-  .brandtext{font-weight:bold;font-size:17px;letter-spacing:.4px;color:#fff}
-  .brandtext span{color:#a8d4de;font-weight:normal}
+  .topbar{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,var(--navy),#04516f);
+          color:#fff;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+          box-shadow:0 2px 10px rgba(3,30,40,.18)}
+  .logo{display:block;height:34px;width:auto;flex:none}
   .who{margin-left:auto;font-size:13px;color:#eaf6f9;display:flex;align-items:center;gap:10px}
   .rolebadge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:var(--r-pill);
              padding:2px 10px;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:.4px}
-  .logout{background:none;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:var(--r-sm);padding:6px 12px;font-size:12px}
+  .logout{background:none;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:var(--r-sm);padding:6px 12px;font-size:12px;transition:background .15s}
   .logout:hover{background:rgba(255,255,255,.12)}
-  .accent{height:3px;background:var(--teal)}
-  main{max-width:1080px;margin:0 auto;padding:24px 20px 60px}
-  h1{font-size:22px;color:var(--navy);margin:0 0 4px;font-weight:700}
-  .sub{color:var(--muted);margin:0 0 20px;font-size:14px}
+  .accent{height:3px;background:linear-gradient(90deg,var(--teal),#5be3ff)}
+  main{max-width:1080px;margin:0 auto;padding:26px 20px 60px}
+  h1{font-size:23px;color:var(--navy);margin:0 0 4px;font-weight:800;letter-spacing:-.2px}
+  .sub{color:var(--muted);margin:0 0 22px;font-size:14px;max-width:56ch}
 
-  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap}
   .btn{background:var(--teal);color:#fff;border:none;border-radius:var(--r-md);padding:10px 18px;
-       font-weight:bold;box-shadow:var(--sh-sm)}
+       font-weight:bold;box-shadow:0 6px 16px -4px rgba(24,134,161,.5);transition:background .15s}
   .btn:hover{background:var(--navy)}
   .btn.ghost{background:none;color:var(--navy);border:1px solid var(--line);font-weight:normal;box-shadow:none}
 
   .newjob{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
-          box-shadow:var(--sh-md);padding:18px 20px;margin-bottom:20px}
-  .newjob h2{margin:0 0 14px;font-size:15px;color:var(--navy)}
+          box-shadow:var(--sh-md);padding:20px 22px;margin-bottom:22px}
+  .newjob h2{margin:0 0 16px;font-size:15px;color:var(--navy);font-weight:800}
   .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 14px}
   @media(max-width:720px){.grid3{grid-template-columns:1fr}}
   .field{margin-bottom:14px}
-  .field label{display:block;font-size:13px;font-weight:bold;color:var(--navy);margin-bottom:4px}
-  .field input,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:var(--r-sm);
-       font-size:14px;font-family:inherit}
+  .field label{display:block;font-size:12.5px;font-weight:bold;color:var(--navy);margin-bottom:5px;
+               text-transform:uppercase;letter-spacing:.3px}
+  .field input,.field select{width:100%;padding:10px 11px;border:1.5px solid var(--line);border-radius:var(--r-sm);
+       font-size:15px;font-family:inherit;background:var(--pale)}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--teal);background:var(--surface);
+       box-shadow:0 0 0 4px rgba(24,134,161,.14)}
   .newjob .row{display:flex;gap:10px;justify-content:flex-end}
+  @media(max-width:480px){.newjob .row{flex-direction:column}.newjob .row .btn{width:100%}}
 
-  table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--r-md);
-        overflow:hidden;box-shadow:var(--sh-sm)}
+  .listwrap{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-sm);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
   thead th{background:var(--pale);text-align:left;font-size:12px;color:var(--navy);text-transform:uppercase;
-            letter-spacing:.3px;padding:10px 12px;border-bottom:1px solid var(--line)}
-  tbody td{padding:11px 12px;border-bottom:1px solid #eef2f3;font-size:13px;vertical-align:middle}
+            letter-spacing:.3px;padding:11px 14px;border-bottom:1px solid var(--line)}
+  tbody td{padding:12px 14px;border-bottom:1px solid #eef2f3;font-size:13.5px;vertical-align:middle}
   tbody tr:last-child td{border-bottom:none}
   tbody tr:hover{background:var(--pale)}
   .ref{font-weight:bold;color:var(--navy)}
   .muted{color:var(--muted)}
-  .pill{display:inline-block;border-radius:var(--r-pill);padding:2px 10px;font-size:11px;font-weight:bold;
+  .pill{display:inline-block;border-radius:var(--r-pill);padding:3px 10px;font-size:11px;font-weight:bold;
         text-transform:uppercase;letter-spacing:.3px}
   .pill.new{background:var(--mist);color:var(--muted)}
   .pill.assigned{background:#e3f1f5;color:var(--teal)}
   .pill.in_progress{background:#dcecef;color:var(--navy)}
   .pill.submitted{background:var(--okbg);color:var(--ok)}
   .pill.reviewed{background:var(--pale);color:var(--faint)}
-  select.assign{padding:5px 7px;border:1px solid var(--line);border-radius:var(--r-sm);font-size:12px;
+  select.assign{padding:6px 8px;border:1px solid var(--line);border-radius:var(--r-sm);font-size:12px;
                 font-family:inherit;background:var(--surface)}
-  .startlink{font-size:12px;color:var(--teal);text-decoration:none;font-weight:bold}
+  .startlink{font-size:12.5px;color:var(--teal);text-decoration:none;font-weight:bold;white-space:nowrap}
   .startlink:hover{text-decoration:underline}
-  .empty{border:1px dashed var(--line);border-radius:var(--r-md);padding:30px;text-align:center;
+  .empty{border:1px dashed var(--line);border-radius:var(--r-md);padding:34px 20px;text-align:center;
          color:var(--muted);background:var(--surface)}
+  .empty b{display:block;color:var(--navy);font-size:14px;margin-bottom:4px}
   .hint{font-size:12px;color:var(--faint);margin-top:14px}
   .hidden{display:none}
+
+  /* below ~720px the jobs table becomes a stack of cards - a data grid does not survive a phone screen */
+  @media(max-width:720px){
+    .listwrap{background:none;box-shadow:none}
+    table,thead,tbody,tr,td{display:block;width:100%}
+    thead{display:none}
+    tbody tr{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+             box-shadow:var(--sh-sm);margin-bottom:12px;overflow:hidden}
+    tbody tr:hover{background:var(--surface)}
+    tbody td{display:flex;align-items:center;justify-content:space-between;gap:14px;
+             padding:10px 14px;border-bottom:1px solid #eef2f3;text-align:right}
+    tbody tr:last-child td:last-child{border-bottom:none}
+    tbody td::before{content:attr(data-label);font-size:11px;font-weight:bold;color:var(--navy);
+             text-transform:uppercase;letter-spacing:.3px;text-align:left;flex:none}
+    tbody td.ref{background:var(--pale)}
+  }
 </style>
 
 <div class="topbar">
-  <svg class="logo" viewBox="0 0 180 124" role="img" aria-label="AJS"><rect x="0" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="62" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="124" y="0" width="56" height="124" fill="#005F8C"></rect><path d="M4,88 L23,36 L33,36 L52,88 L41.5,88 L38.6,72 L17.4,72 L14.5,88 Z M28,45 L22,63 L34,63 Z" fill="#ffffff" fill-rule="evenodd"></path><path d="M108,36 L108,70 C108,80.5 100,88 89,88 C79,88 72,82 70,73 L80.5,70 C82,76 85,79 89,79 C94,79 96.5,75.5 96.5,70 L96.5,36 Z" fill="#ffffff"></path><path d="M165,43.5 L165,49 A13,13 0 1 0 152,62 A13,13 0 1 1 139,75 L139,80.5" fill="none" stroke="#ffffff" stroke-width="11.5"></path></svg>
-  <div class="brandtext">AJS <span>Energy</span></div>
+  <img class="logo" src="ajs-energy-logo.svg" alt="AJS Energy">
   <div class="who">
     <span id="whoName"></span><span class="rolebadge" id="whoRole"></span>
     <button class="logout" id="logoutBtn" type="button">Sign out</button>
@@ -176,7 +197,9 @@
 
   function render(jobs) {
     if (!jobs.length) {
-      el('listHost').innerHTML = '<div class="empty">'+(isManager ? 'No jobs yet - create the first one above.' : 'Nothing assigned to you yet.')+'</div>';
+      el('listHost').innerHTML = isManager
+        ? '<div class="empty"><b>No jobs yet</b>Create the first one above and assign it to an engineer.</div>'
+        : '<div class="empty"><b>Nothing assigned to you yet</b>Your manager will assign jobs here as they come in.</div>';
       return;
     }
     const rows = jobs.map(j => {
@@ -184,17 +207,17 @@
         ? '<select class="assign" data-job="'+j.id+'">'+assignOptions(j.assigned_to)+'</select>'
         : esc(me.full_name || '-');
       return '<tr>'+
-        '<td class="ref">'+esc(j.reference)+'</td>'+
-        '<td>'+esc(j.site_name||'-')+'<div class="muted">'+esc(j.client||'')+'</div></td>'+
-        '<td>'+esc(FORM_LABEL[j.form_type]||j.form_type)+'</td>'+
-        '<td><span class="pill '+j.status+'">'+esc(j.status.replace('_',' '))+'</span></td>'+
-        '<td>'+assignCell+'</td>'+
-        '<td><a class="startlink" href="'+FORM_FILE[j.form_type]+'" target="_blank" rel="noopener">Start form &rarr;</a></td>'+
+        '<td class="ref" data-label="Reference">'+esc(j.reference)+'</td>'+
+        '<td data-label="Site / client"><div>'+esc(j.site_name||'-')+'<div class="muted">'+esc(j.client||'')+'</div></div></td>'+
+        '<td data-label="Type">'+esc(FORM_LABEL[j.form_type]||j.form_type)+'</td>'+
+        '<td data-label="Status"><span class="pill '+j.status+'">'+esc(j.status.replace('_',' '))+'</span></td>'+
+        '<td data-label="Assigned to">'+assignCell+'</td>'+
+        '<td data-label="Form"><a class="startlink" href="'+FORM_FILE[j.form_type]+'" target="_blank" rel="noopener">Start form &rarr;</a></td>'+
         '</tr>';
     }).join('');
     el('listHost').innerHTML =
-      '<table><thead><tr><th>Reference</th><th>Site / client</th><th>Type</th><th>Status</th><th>Assigned to</th><th></th></tr></thead>'+
-      '<tbody>'+rows+'</tbody></table>';
+      '<div class="listwrap"><table><thead><tr><th>Reference</th><th>Site / client</th><th>Type</th><th>Status</th><th>Assigned to</th><th></th></tr></thead>'+
+      '<tbody>'+rows+'</tbody></table></div>';
 
     if (isManager) {
       el('listHost').querySelectorAll('select.assign').forEach(sel => {
