@@ -20,16 +20,26 @@
   button{font-family:inherit;font-size:inherit;cursor:pointer}
   :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r-sm)}
   .topbar{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,var(--navy),#04516f);
-          color:#fff;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+          color:#fff;padding:11px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
           box-shadow:0 2px 10px rgba(3,30,40,.18)}
-  .logo{display:block;height:34px;width:auto;flex:none}
+  /* logo is taken out of flow so its true (tall) aspect ratio can render at readable size -
+     the header bar stays thin and the wordmark hangs down over the page background below it,
+     matching the ajsenergy.uk site treatment */
+  .logospacer{width:104px;height:1px;flex:none}
+  .logowrap{position:absolute;left:20px;top:7px;z-index:11;line-height:0}
+  .logo{display:block;height:58px;width:auto;filter:drop-shadow(0 8px 10px rgba(2,20,28,.4))}
   .who{margin-left:auto;font-size:13px;color:#eaf6f9;display:flex;align-items:center;gap:10px}
   .rolebadge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:var(--r-pill);
              padding:2px 10px;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:.4px}
   .logout{background:none;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:var(--r-sm);padding:6px 12px;font-size:12px;transition:background .15s}
   .logout:hover{background:rgba(255,255,255,.12)}
   .accent{height:3px;background:linear-gradient(90deg,var(--teal),#5be3ff)}
-  main{max-width:1080px;margin:0 auto;padding:26px 20px 60px}
+  main{max-width:1080px;margin:0 auto;padding:38px 20px 60px}
+  @media(max-width:480px){
+    .logo{height:46px}
+    .logospacer{width:84px}
+    main{padding-top:32px}
+  }
   h1{font-size:23px;color:var(--navy);margin:0 0 4px;font-weight:800;letter-spacing:-.2px}
   .sub{color:var(--muted);margin:0 0 22px;font-size:14px;max-width:56ch}
 
@@ -98,7 +108,8 @@
 </style>
 
 <div class="topbar">
-  <img class="logo" src="ajs-energy-logo.svg" alt="AJS Energy">
+  <div class="logospacer"></div>
+  <div class="logowrap"><img class="logo" src="ajs-energy-logo.svg" alt="AJS Energy"></div>
   <div class="who">
     <span id="whoName"></span><span class="rolebadge" id="whoRole"></span>
     <button class="logout" id="logoutBtn" type="button">Sign out</button>
