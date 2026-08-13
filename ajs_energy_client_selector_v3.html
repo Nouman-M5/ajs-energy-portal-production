@@ -24,6 +24,11 @@
        font-size:15px;line-height:1.55}
   button{font-family:inherit;font-size:inherit;cursor:pointer}
   :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r-sm)}
+
+  /* overall-progress bar, tracks how many of the 8 steps are actually complete */
+  .progresstrack{height:4px;background:var(--line)}
+  .progressfill{height:4px;background:var(--navy);width:0%;transition:width .4s}
+
   .topbar{background:var(--teal);color:#fff;padding:10px 20px;display:flex;
           align-items:center;gap:16px;flex-wrap:wrap}
   .logo{display:block;height:50px;width:auto;flex:none}
@@ -31,7 +36,24 @@
             font-weight:600;text-decoration:none;padding:5px 8px;border-radius:var(--r-sm)}
   .backlink:hover{background:rgba(255,255,255,.1);color:#fff}
   .accent{height:3px;background:linear-gradient(90deg,var(--teal),#5be3ff)}
-  main{max-width:900px;margin:0 auto;padding:24px 20px 60px}
+  main{max-width:1140px;margin:0 auto;padding:24px 20px 60px}
+  .mainwrap{display:flex;flex-wrap:wrap;gap:24px}
+  .colmain{flex:2 1 380px;min-width:0}
+
+  /* sticky "your enquiry so far" sidebar - collapses below the main column on narrow screens
+     via flex-wrap, same as the design reference, no separate media query needed */
+  .sidebarwrap{flex:1 1 260px;min-width:0}
+  .sidebar{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+           box-shadow:var(--sh-sm);padding:18px;position:sticky;top:20px}
+  .sidebar .stepnow{font-size:11px;font-weight:700;color:var(--navy);letter-spacing:.05em;
+                    text-transform:uppercase}
+  .sidebar h3{margin:6px 0 12px;font-size:16px;color:var(--ink)}
+  .sidebar .sbempty{font-size:13px;color:var(--muted)}
+  .sidebarchips{display:flex;flex-direction:column;gap:8px}
+  .sidebarchip{font-size:13px;color:var(--ink);background:var(--mist);border-radius:6px;padding:7px 10px}
+  .sidebarest{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+  .sidebarest .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sidebarest .fig{font-size:18px;font-weight:700;color:var(--navy);margin-top:4px}
 
   .hero{background:linear-gradient(135deg,#0d2a33,#061318);border-radius:var(--r-lg);
         padding:26px 24px;margin:4px 0 20px;box-shadow:var(--sh-md)}
@@ -59,7 +81,7 @@
         margin-bottom:16px;box-shadow:var(--sh-sm)}
   .step > header{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;
                  align-items:baseline;flex-wrap:wrap}
-  .step > header b{color:var(--navy)}
+  .step > header b{color:var(--ink);font-family:inherit}
   .step > header .n{background:var(--teal);color:#fff;border-radius:var(--r-sm);font-size:12px;
                     padding:2px 7px;font-weight:bold}
   .step > header .hint{margin-left:auto;font-size:12px;color:var(--faint)}
@@ -172,6 +194,8 @@
   .hidden{display:none}
 </style>
 
+<div class="progresstrack"><div class="progressfill" id="progressfill"></div></div>
+
 <div class="topbar">
   <img class="logo" src="ajs-energy-logo.svg" alt="AJS Energy">
   <a class="backlink" href="jobs.html">&larr;<span>Jobs</span></a>
@@ -179,6 +203,8 @@
 <div class="accent"></div>
 
 <main>
+<div class="mainwrap">
+<div class="colmain">
   <div class="hero">
     <h1 id="head"></h1>
     <p class="sub" id="subhead"></p>
@@ -281,6 +307,21 @@
       <button class="btn ghost" id="restart" style="margin-top:14px">Start again</button>
     </div>
   </div>
+</div>
+
+<div class="sidebarwrap">
+  <div class="sidebar">
+    <div class="stepnow" id="sbstep"></div>
+    <h3>Your enquiry so far</h3>
+    <p class="sbempty" id="sbempty">Answer the questions on the left and we'll build your spec here.</p>
+    <div class="sidebarchips" id="sbchips"></div>
+    <div class="sidebarest hidden" id="sbest">
+      <div class="lbl">Est. installed cost</div>
+      <div class="fig" id="sbestfig"></div>
+    </div>
+  </div>
+</div>
+</div>
 </main>
 
 <script>
@@ -392,6 +433,7 @@ const S={seg:null,cur:null,mfr:null,mod:null,vari:null};
 let mfrQ='',modQ='';
 const media={};
 let estAnimId=null;
+let submitted=false;
 const el=id=>document.getElementById(id);
 const segs=()=>SEGS;
 const shots=()=>SHOTS;
@@ -423,19 +465,37 @@ function drop(k){
   order.slice(order.indexOf(k)).forEach(x=>S[x]=null);
   mfrQ=''; modQ='';
 }
-function chips(){
+function chipList(){
   const b=[];
   if(S.seg) b.push(['seg',segs().find(s=>s.id===S.seg).name]);
   if(S.cur) b.push(['cur',CURRENTS.find(c=>c.id===S.cur).name]);
   if(S.mfr) b.push(['mfr',S.mfr]);
   if(S.mod) b.push(['mod',S.mod]);
   if(S.vari)b.push(['vari',S.vari]);
+  return b;
+}
+function chips(){
+  const b=chipList();
   el('chips').innerHTML=b.map(([k,l])=>
     '<button class="chip" data-d="'+k+'">'+l+' <em>&times;</em></button>').join(' ');
   el('nofilters').classList.toggle('hidden',b.length>0);
   el('chips').querySelectorAll('[data-d]').forEach(x=>
     x.onclick=()=>{drop(x.dataset.d);render();});
   el('count').textContent=match().length+' of '+all().length+' models match';
+}
+
+/* ---------------- overall progress bar + "your enquiry so far" sidebar ---------------- */
+function renderProgress(n){
+  el('progressfill').style.width=Math.round(n/8*100)+'%';
+}
+function renderSidebar(n){
+  el('sbstep').textContent='Step '+n+' of 8';
+  const b=chipList();
+  el('sbempty').classList.toggle('hidden',b.length>0);
+  el('sbchips').innerHTML=b.map(([,l])=>'<div class="sidebarchip">'+l+'</div>').join('');
+  const est=computeEstimateRange();
+  el('sbest').classList.toggle('hidden',!est);
+  if(est) el('sbestfig').textContent='£'+est.lo+' – £'+est.hi;
 }
 
 /* ---------------- tiles (segment picker + AC/DC current picker) ---------------- */
@@ -569,10 +629,8 @@ function animateFigure(node,loTarget,hiTarget){
   })(t0);
 }
 
-function renderEstimate(){
-  const p=el('estimate'), u=current();
-  if(!RATES.configured||!u){ p.classList.add('hidden'); return; }
-  p.classList.remove('hidden');
+function computeEstimateRange(){
+  const u=current(); if(!RATES.configured||!u) return null;
   const n=Math.max(1,parseInt(el('f-sockets').value)||1);
   let lo,hi;
   if(u.type==='AC'){
@@ -583,14 +641,22 @@ function renderEstimate(){
     lo=kw*RATES.dcPerKw[0]*n; hi=kw*RATES.dcPerKw[1]*n;
   }
   lo+=RATES.civilsPerSocket[0]*n; hi+=RATES.civilsPerSocket[1]*n;
-  const loR=Math.round(lo/100)*100, hiR=Math.round(hi/100)*100;
+  return {lo:Math.round(lo/100)*100, hi:Math.round(hi/100)*100};
+}
+
+function renderEstimate(){
+  const p=el('estimate'), u=current();
+  const est=computeEstimateRange();
+  if(!est){ p.classList.add('hidden'); return; }
+  p.classList.remove('hidden');
+  const n=Math.max(1,parseInt(el('f-sockets').value)||1);
   p.className='panel readout';
-  p.innerHTML='<h3>Indicative installed cost</h3><div class="figure" id="estFigure">£'+loR+' – £'+hiR+'</div>'+
+  p.innerHTML='<h3>Indicative installed cost</h3><div class="figure" id="estFigure">£'+est.lo+' – £'+est.hi+'</div>'+
     '<p>'+n+' × '+u.mfr+' '+u.name+(S.vari?' ('+S.vari+')':'')+
     ', including groundworks, bases and protection. Before grant. This is a range from a rate '+
     'card, not a quote - the firm figure follows the survey.</p>'+
     '<div class="sla">'+ICON.check+'<span>Send photos and we come back with a fixed price within 2 working days.</span></div>';
-  animateFigure(el('estFigure'),loR,hiR);
+  animateFigure(el('estFigure'),est.lo,est.hi);
 }
 
 /* ---------------- grant engine (scheme facts as published July 2026) ---------------- */
@@ -707,20 +773,32 @@ function render(){
   if(S.mod&&needsVariant()) renderVar();
   if(done){renderEstimate();renderGrant();renderShots();}
   el('mfrq').value=mfrQ; el('modq').value=modQ;
+
+  const needsVar=needsVariant();
+  const activeStepNum=[!!S.seg,!!S.cur,r3&&!!S.mfr,r3&&!!S.mod,
+    needsVar?!!S.vari:(!!S.mod&&!needsVar),done,done&&Object.values(media).length>0,
+    submitted].filter(Boolean).length;
+  renderProgress(activeStepNum);
+  renderSidebar(activeStepNum);
 }
 
 function mode(){
   Object.keys(S).forEach(k=>S[k]=null);
   Object.keys(media).forEach(k=>delete media[k]);
   mfrQ=modQ=''; el('done').classList.add('hidden');
-  el('f-sockets').value=4;
+  el('f-sockets').value=4; submitted=false;
   render();
 }
 el('mfrq').oninput=e=>{mfrQ=e.target.value.trim().toLowerCase();renderMfr();};
 el('modq').oninput=e=>{modQ=e.target.value.trim().toLowerCase();renderMod();};
 el('mfrclr').onclick=()=>{mfrQ='';render();};
 el('modclr').onclick=()=>{modQ='';render();};
-el('f-sockets').oninput=()=>{renderEstimate();renderGrant();};
+el('f-sockets').oninput=()=>{
+  renderEstimate();renderGrant();
+  const est=computeEstimateRange();
+  el('sbest').classList.toggle('hidden',!est);
+  if(est) el('sbestfig').textContent='£'+est.lo+' – £'+est.hi;
+};
 
 el('submit').onclick=()=>{
   const n=el('f-sockets').value||'1', u=current();
@@ -739,6 +817,9 @@ el('submit').onclick=()=>{
   if(el('f-ch').value) rows.push(['Companies House',el('f-ch').value]);
   el('donefields').innerHTML=rows.map(([k,v])=>'<dt>'+k+'</dt><dd>'+v+'</dd>').join('');
   el('done').classList.remove('hidden');
+  submitted=true;
+  renderProgress(8);
+  renderSidebar(8);
   el('done').scrollIntoView({behavior:'smooth',block:'center'});
 };
 el('restart').onclick=()=>mode();
