@@ -352,7 +352,7 @@ const RANGE={
    PLACEHOLDER install rates. Not AJS pricing. Replace before go-live.
    ===================================================================== */
 const RATES={
-  configured:true,
+  configured:false, // real AJS pricing not loaded yet - estimate panel stays hidden until it is
   ac:{ '7kW':[850,1400], '11kW':[1300,2200], '22kW (shared)':[1500,2600],
        '22kW (per port)':[1900,3200] },
   dcPerKw:[110,190],          // per kW of rated output, hardware plus install
