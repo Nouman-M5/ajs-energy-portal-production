@@ -29,6 +29,7 @@
   .logowrap{position:absolute;left:20px;top:7px;z-index:11;line-height:0}
   .logo{display:block;height:58px;width:auto;filter:drop-shadow(0 8px 10px rgba(2,20,28,.4))}
   .who{margin-left:auto;font-size:13px;color:#eaf6f9;display:flex;align-items:center;gap:10px}
+  .who a:hover{text-decoration:underline!important}
   .rolebadge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:var(--r-pill);
              padding:2px 10px;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:.4px}
   .logout{background:none;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:var(--r-sm);padding:6px 12px;font-size:12px;transition:background .15s}
@@ -64,14 +65,6 @@
   .newjob .row{display:flex;gap:10px;justify-content:flex-end}
   @media(max-width:480px){.newjob .row{flex-direction:column}.newjob .row .btn{width:100%}}
 
-  .listwrap{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-sm);overflow:hidden}
-  table{width:100%;border-collapse:collapse}
-  thead th{background:var(--pale);text-align:left;font-size:12px;color:var(--navy);text-transform:uppercase;
-            letter-spacing:.3px;padding:11px 14px;border-bottom:1px solid var(--line)}
-  tbody td{padding:12px 14px;border-bottom:1px solid #eef2f3;font-size:13.5px;vertical-align:middle}
-  tbody tr:last-child td{border-bottom:none}
-  tbody tr:hover{background:var(--pale)}
-  .ref{font-weight:bold;color:var(--navy)}
   .muted{color:var(--muted)}
   .pill{display:inline-block;border:none;border-radius:var(--r-pill);padding:3px 10px;font-size:11px;font-weight:bold;
         text-transform:uppercase;letter-spacing:.3px}
@@ -80,7 +73,7 @@
   .msg.ok{background:var(--okbg);color:var(--ok)}
   .pill.new{background:var(--mist);color:var(--muted)}
   .pill.assigned{background:#e3f1f5;color:var(--teal)}
-  .pill.in_progress{background:#dcecef;color:var(--navy)}
+  .pill.in_progress{background:var(--hazardbg);color:var(--hazard)}
   .pill.submitted{background:var(--okbg);color:var(--ok)}
   .pill.reviewed{background:var(--pale);color:var(--faint)}
   select.assign{padding:6px 8px;border:1px solid var(--line);border-radius:var(--r-sm);font-size:12px;
@@ -93,28 +86,52 @@
   .hint{font-size:12px;color:var(--faint);margin-top:14px}
   .hidden{display:none}
 
-  /* below ~720px the jobs table becomes a stack of cards - a data grid does not survive a phone screen */
-  @media(max-width:720px){
-    .listwrap{background:none;box-shadow:none}
-    table,thead,tbody,tr,td{display:block;width:100%}
-    thead{display:none}
-    tbody tr{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
-             box-shadow:var(--sh-sm);margin-bottom:12px;overflow:hidden}
-    tbody tr:hover{background:var(--surface)}
-    tbody td{display:flex;align-items:center;justify-content:space-between;gap:14px;
-             padding:10px 14px;border-bottom:1px solid #eef2f3;text-align:right}
-    tbody tr:last-child td:last-child{border-bottom:none}
-    tbody td::before{content:attr(data-label);font-size:11px;font-weight:bold;color:var(--navy);
-             text-transform:uppercase;letter-spacing:.3px;text-align:left;flex:none}
-    tbody td.ref{background:var(--pale)}
-  }
+  /* search + status chips, filtering the already-loaded list client-side */
+  .searchrow{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .searchbox{flex:1;min-width:160px;display:flex;align-items:center;gap:8px;background:var(--surface);
+             border:1px solid var(--line);border-radius:10px;padding:0 12px}
+  .searchbox svg{flex:none;color:var(--faint)}
+  .searchbox input{border:none;outline:none;background:none;font-size:13.5px;width:100%;
+                    font-family:inherit;color:var(--ink);padding:10px 0}
+  .chiprow{display:flex;gap:8px;overflow-x:auto;margin-bottom:20px;padding-bottom:2px}
+  .chip{flex:none;border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:600;
+        border:1px solid var(--line);background:var(--surface);color:var(--muted)}
+  .chip.on{background:var(--teal);border-color:var(--teal);color:#fff}
+
+  /* job cards - one layout for every screen size, no separate mobile table hack needed */
+  .jobslist{display:flex;flex-direction:column;gap:12px}
+  .jobcard{background:var(--surface);border:1px solid #eaf0f1;border-radius:16px;padding:16px;
+           box-shadow:0 1px 3px rgba(5,40,50,.07);display:flex;flex-direction:column;gap:12px}
+  .jobcard .row1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .jobcard .refnum{font-weight:800;font-size:13px;color:var(--teal);letter-spacing:.2px;white-space:nowrap}
+  .jobcard .site{font-size:15px;font-weight:700;color:var(--navy)}
+  .jobcard .client{font-size:12.5px;color:var(--faint);margin-top:1px}
+  .typerow{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+  .typerow svg{color:var(--faint)}
+  .divider{height:1px;background:#eef2f3}
+  .row3{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .assigneepill{display:flex;align-items:center;gap:8px;min-width:0}
+  .avatarsm{width:22px;height:22px;border-radius:999px;background:#e3f1f5;color:var(--teal);
+            display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;flex:none}
+  .avatarsm.unassigned{background:var(--mist);color:var(--faint)}
+
+  /* team member rows */
+  .teamlist{display:flex;flex-direction:column;gap:10px}
+  .teamrow{background:var(--surface);border:1px solid #eaf0f1;border-radius:14px;padding:14px;
+           display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(5,40,50,.06)}
+  .avatarmd{width:38px;height:38px;border-radius:999px;background:var(--navy);color:#fff;
+            display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none}
+  .teamwho{flex:1;min-width:120px}
+  .teamwho .tname{font-size:14px;font-weight:700;color:var(--navy)}
+  .teamwho .temail{font-size:12px;color:var(--faint);margin-top:1px}
+  .teamctl{display:flex;align-items:center;gap:8px;flex:none}
 </style>
 
 <div class="topbar">
   <div class="logospacer"></div>
   <div class="logowrap"><img class="logo" src="ajs-energy-logo.svg" alt="AJS Energy"></div>
   <div class="who">
-    <span id="whoName"></span><span class="rolebadge" id="whoRole"></span>
+    <a href="profile.html" id="whoName" title="View and edit your profile" style="color:inherit;text-decoration:none;font-weight:700"></a><span class="rolebadge" id="whoRole"></span>
     <button class="logout" id="logoutBtn" type="button">Sign out</button>
   </div>
 </div>
@@ -164,6 +181,14 @@
       <button class="btn" id="nj-save" type="button">Create job</button>
     </div>
   </div>
+
+  <div class="searchrow">
+    <div class="searchbox">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="jobSearch" type="search" placeholder="Search jobs by reference, site or client">
+    </div>
+  </div>
+  <div class="chiprow" id="chipRow"></div>
 
   <div id="listHost"></div>
   <p class="hint" id="wiringHint"></p>
@@ -218,37 +243,77 @@
       engineers.map(en => '<option value="'+en.id+'"'+(en.id===selectedId?' selected':'')+'>'+esc(en.full_name||'(unnamed)')+'</option>').join('');
   }
 
+  const STATUS_LABELS = { new:'New', assigned:'Assigned', in_progress:'In progress', submitted:'Submitted', reviewed:'Reviewed' };
+  const STATUS_ORDER = ['new','assigned','in_progress','submitted','reviewed'];
+  const ICO_CASE = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 7h16v13H4z" stroke="currentColor" stroke-width="2"/><path d="M9 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="2"/></svg>';
+  const initialsOf = name => {
+    const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+    return parts.length ? (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase() : '?';
+  };
+
+  let allJobs = [], searchQ = '', statusFilter = 'all';
+
   async function loadJobs() {
     let q = supabase.from('jobs').select('*').order('created_at', { ascending: false });
     if (!isManager) q = q.eq('assigned_to', me.id);
     const { data, error } = await q;
     if (error) { el('listHost').innerHTML = '<div class="empty">Could not load jobs: '+esc(error.message)+'</div>'; return; }
-    render(data || []);
+    allJobs = data || [];
+    renderChips();
+    renderList();
   }
 
+  function renderChips() {
+    const chips = [['all','All']].concat(STATUS_ORDER.map(s => [s, STATUS_LABELS[s]]));
+    el('chipRow').innerHTML = chips.map(([key, label]) => {
+      const count = key === 'all' ? allJobs.length : allJobs.filter(j => j.status === key).length;
+      return '<button type="button" class="chip'+(statusFilter===key?' on':'')+'" data-filter="'+key+'">'+label+' ('+count+')</button>';
+    }).join('');
+    el('chipRow').querySelectorAll('.chip').forEach(b => {
+      b.onclick = () => { statusFilter = b.dataset.filter; renderChips(); renderList(); };
+    });
+  }
+
+  function renderList() {
+    const q = searchQ.toLowerCase();
+    const jobs = allJobs.filter(j => {
+      if (statusFilter !== 'all' && j.status !== statusFilter) return false;
+      if (q && !(j.reference+' '+(j.site_name||'')+' '+(j.client||'')).toLowerCase().includes(q)) return false;
+      return true;
+    });
+    render(jobs);
+  }
+  el('jobSearch').oninput = e => { searchQ = e.target.value.trim(); renderList(); };
+
   function render(jobs) {
-    if (!jobs.length) {
+    if (!allJobs.length) {
       el('listHost').innerHTML = isManager
         ? '<div class="empty"><b>No jobs yet</b>Create the first one above and assign it to an engineer.</div>'
         : '<div class="empty"><b>Nothing assigned to you yet</b>Your manager will assign jobs here as they come in.</div>';
       return;
     }
-    const rows = jobs.map(j => {
-      const assignCell = isManager
+    if (!jobs.length) {
+      el('listHost').innerHTML = '<div class="empty"><b>No matches</b>Try a different search term or filter.</div>';
+      return;
+    }
+    const cards = jobs.map(j => {
+      const assigneePill = isManager
         ? '<select class="assign" data-job="'+j.id+'">'+assignOptions(j.assigned_to)+'</select>'
-        : esc(me.full_name || '-');
-      return '<tr>'+
-        '<td class="ref" data-label="Reference">'+esc(j.reference)+'</td>'+
-        '<td data-label="Site / client"><div>'+esc(j.site_name||'-')+'<div class="muted">'+esc(j.client||'')+'</div></div></td>'+
-        '<td data-label="Type">'+esc(FORM_LABEL[j.form_type]||j.form_type)+'</td>'+
-        '<td data-label="Status"><span class="pill '+j.status+'">'+esc(j.status.replace('_',' '))+'</span></td>'+
-        '<td data-label="Assigned to">'+assignCell+'</td>'+
-        '<td data-label="Form"><a class="startlink" href="'+FORM_FILE[j.form_type]+'">Start form &rarr;</a></td>'+
-        '</tr>';
+        : '<span class="avatarsm">'+initialsOf(me.full_name)+'</span><span class="muted">'+esc(me.full_name || 'You')+'</span>';
+      return '<div class="jobcard">' +
+        '<div class="row1"><span class="refnum">'+esc(j.reference)+'</span>' +
+        '<span class="pill '+j.status+'">'+esc(STATUS_LABELS[j.status] || j.status)+'</span></div>' +
+        '<div><div class="site">'+esc(j.site_name || 'Site not set')+'</div>' +
+        (j.client ? '<div class="client">'+esc(j.client)+'</div>' : '') + '</div>' +
+        '<div class="typerow">'+ICO_CASE+'<span>'+esc(FORM_LABEL[j.form_type]||j.form_type)+'</span></div>' +
+        '<div class="divider"></div>' +
+        '<div class="row3">' +
+          '<div class="assigneepill">'+assigneePill+'</div>' +
+          '<a class="startlink" href="'+FORM_FILE[j.form_type]+'">Start form &rarr;</a>' +
+        '</div>' +
+      '</div>';
     }).join('');
-    el('listHost').innerHTML =
-      '<div class="listwrap"><table><thead><tr><th>Reference</th><th>Site / client</th><th>Type</th><th>Status</th><th>Assigned to</th><th></th></tr></thead>'+
-      '<tbody>'+rows+'</tbody></table></div>';
+    el('listHost').innerHTML = '<div class="jobslist">'+cards+'</div>';
 
     if (isManager) {
       el('listHost').querySelectorAll('select.assign').forEach(sel => {
@@ -273,19 +338,19 @@
 
   function renderTeam(rows) {
     if (!rows.length) { el('teamListHost').innerHTML = '<div class="empty">No team members yet.</div>'; return; }
-    const trs = rows.map(p => {
+    const cards = rows.map(p => {
       const roleSel = '<select class="assign teamrole" data-id="'+p.id+'">' +
         ['engineer','manager'].map(r => '<option value="'+r+'"'+(p.role===r?' selected':'')+'>'+r+'</option>').join('') +
         '</select>';
       const activeBtn = '<button type="button" class="pill teamactive '+(p.active?'submitted':'reviewed')+'" data-id="'+p.id+'" data-active="'+p.active+'">'+(p.active?'Active':'Inactive')+'</button>';
-      return '<tr>' +
-        '<td data-label="Name">'+esc(p.full_name||'(unnamed)')+(p.id===me.id?' <span class="muted">(you)</span>':'')+'</td>' +
-        '<td data-label="Email">'+esc(p.email||'-')+'</td>' +
-        '<td data-label="Role">'+roleSel+'</td>' +
-        '<td data-label="Status">'+activeBtn+'</td>' +
-        '</tr>';
+      return '<div class="teamrow">' +
+        '<div class="avatarmd">'+initialsOf(p.full_name)+'</div>' +
+        '<div class="teamwho"><div class="tname">'+esc(p.full_name||'(unnamed)')+(p.id===me.id?' <span class="muted">(you)</span>':'')+'</div>' +
+        '<div class="temail">'+esc(p.email||'-')+'</div></div>' +
+        '<div class="teamctl">'+roleSel+activeBtn+'</div>' +
+        '</div>';
     }).join('');
-    el('teamListHost').innerHTML = '<div class="listwrap"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead><tbody>'+trs+'</tbody></table></div>';
+    el('teamListHost').innerHTML = '<div class="teamlist">'+cards+'</div>';
 
     el('teamListHost').querySelectorAll('.teamrole').forEach(sel => {
       sel.onchange = async () => {
