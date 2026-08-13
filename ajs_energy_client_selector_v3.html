@@ -607,8 +607,9 @@ function renderGrant(){
     const s=Math.min(n,40);
     t='Workplace Charging Scheme';
     f='up to £'+(s*500).toLocaleString()+' towards '+s+(s===1?' socket':' sockets');
-    note='£500 per socket from 1 April 2026, capped at 40 sockets (£20,000). We apply on your '+
-      'behalf as an OZEV-approved installer, so we need your Companies House number.'+
+    note='75% of purchase and install cost, capped at £500 per socket and 40 sockets (£20,000). '+
+      'Scheme is confirmed to run to 31 March 2027. We apply on your behalf as an OZEV-approved '+
+      'installer, so we need your Companies House number.'+
       (n>40?' Sockets beyond 40 are not covered.':'');
   } else if(S.seg==='fleet'){
     t='Depot Charging Scheme - window 2'; f='opens 28 October 2026';
@@ -618,9 +619,11 @@ function renderGrant(){
       'so the site list has to be right first time.';
   } else if(S.seg==='education'){
     t='Chargepoint grant for schools and colleges';
-    f='up to £'+(n*2000).toLocaleString();
-    note='£2,000 per socket at 75% cost coverage from 1 April 2026, down from £2,500. Open to '+
-      'state schools, academies, independent schools, FE colleges and universities.';
+    f='up to £'+(n*2000).toLocaleString()+' (state-funded)';
+    note='£2,000 per socket at 75% cost coverage from 1 April 2026, down from £2,500 - but only '+
+      'for state-funded schools, academies and FE colleges. Independent schools and universities '+
+      'get the standard Workplace Charging Scheme rate instead (up to £500 per socket, 40 socket '+
+      'cap) - worth confirming which applies to you before we quote. Scheme runs to 31 March 2027.';
   } else {
     shut=true; t='No general grant for public charging'; f='commercial models instead';
     note='Public and retail sites usually go down a revenue-share or concession route. Local '+
