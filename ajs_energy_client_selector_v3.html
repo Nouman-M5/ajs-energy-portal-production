@@ -37,14 +37,6 @@
          padding:6px 12px;font-size:12px;font-weight:600}
   .trust svg{flex:none}
 
-  .devnote{position:relative;background:#fffaf0;border:2px dashed var(--hazard-line);
-           border-radius:var(--r-md);padding:16px 16px 14px;font-size:13px;margin-bottom:20px;
-           color:#5c4416;overflow:hidden}
-  .devnote b{display:flex;align-items:center;gap:7px;color:#4d3d10;text-transform:uppercase;
-             letter-spacing:.4px;font-size:12px;margin-bottom:7px;font-weight:700}
-  .devnote::after{content:'INTERNAL';position:absolute;top:10px;right:-30px;
-           background:var(--hazard);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;
-           padding:3px 34px;transform:rotate(35deg);box-shadow:var(--sh-sm)}
 
   .chipbar{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
            padding:12px 14px;margin-bottom:20px;display:flex;gap:8px;align-items:center;
@@ -182,13 +174,6 @@
     <h1 id="head"></h1>
     <p class="sub" id="subhead"></p>
     <div class="trustrow" id="trustrow"></div>
-  </div>
-
-  <div class="devnote" id="devnote">
-    <b>Internal build note - delete this block before go-live.</b>
-    Install rates in <code>RATES</code> are placeholders, not AJS pricing. Segment suitability per
-    model is inferred and needs confirming against your own spec sheets. Set
-    <code>RATES.configured = false</code> to hide the estimate until real figures are loaded.
   </div>
 
   <div class="chipbar">
@@ -749,11 +734,9 @@ el('submit').onclick=()=>{
 };
 el('restart').onclick=()=>mode();
 
-/* ---------- static, mode-invariant chrome: trust row, dev-note stamp, CTA icon ---------- */
+/* ---------- static, mode-invariant chrome: trust row, CTA icon ---------- */
 el('trustrow').innerHTML=TRUST.map(([icon,label])=>
   '<span class="trust">'+icon+'<span>'+label+'</span></span>').join('');
-el('devnote').querySelector('b').innerHTML=ICON.wrench+
-  '<span>Internal build note - delete this block before go-live.</span>';
 el('submit').innerHTML=ICON.check+'<span>Request a survey</span>';
 
 mode();
