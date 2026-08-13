@@ -21,12 +21,14 @@
   button{font-family:inherit;font-size:inherit;cursor:pointer}
   :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r-sm)}
 
-  .topbar{background:var(--navy);color:#fff;padding:12px 18px;display:flex;
-          align-items:center;gap:14px;flex-wrap:wrap}
-  .logo{display:block;height:32px;width:auto}
+  .topbar{background:var(--navy);color:#fff;padding:8px 18px;display:flex;
+          align-items:center;gap:12px;flex-wrap:wrap}
+  .logo{display:block;height:50px;width:auto;flex:none}
   .who{margin-left:auto;font-size:12px;color:#a8d4de;background:none;border:none;
-       padding:5px 8px;border-radius:var(--r-sm)}
+       padding:5px 8px;border-radius:var(--r-sm);max-width:150px;overflow:hidden;
+       text-overflow:ellipsis;white-space:nowrap}
   .who:hover{background:rgba(255,255,255,.1);color:#fff}
+  @media(max-width:420px){.logo{height:40px}}
   .accent{height:3px;background:var(--teal)}
   .netbar{background:var(--surface);border-bottom:1px solid var(--line);padding:7px 18px;
           display:flex;gap:10px;align-items:center;font-size:13px;flex-wrap:wrap}
