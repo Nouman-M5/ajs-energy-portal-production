@@ -42,12 +42,24 @@
   .sub{color:var(--muted);margin:0 0 20px;font-size:14px}
 
   /* form picker */
+  .pickwrap{margin-bottom:11px}
   .pick{display:block;width:100%;text-align:left;background:var(--surface);
         border:1px solid var(--line);border-left:4px solid var(--teal);padding:15px 16px;
-        margin-bottom:11px;border-radius:var(--r-md);box-shadow:var(--sh-sm)}
+        border-radius:var(--r-md) var(--r-md) 0 0;box-shadow:var(--sh-sm)}
+  .pickwrap:not(:has(.startover)) .pick{border-radius:var(--r-md)}
   .pick:hover{background:var(--pale);box-shadow:var(--sh-md)}
   .pick b{display:block;color:var(--navy);font-size:15px}
   .pick small{color:var(--muted);font-size:13px}
+  .draftpill{display:flex;align-items:center;gap:5px;color:var(--teal);font-size:12px;
+             font-weight:700;margin-bottom:6px}
+  .draftpill svg{flex:none}
+  .startover{display:block;width:100%;text-align:left;background:var(--pale);
+             border:1px solid var(--line);border-top:none;border-radius:0 0 var(--r-md) var(--r-md);
+             padding:8px 16px;color:var(--danger);font-size:12px;text-decoration:underline}
+  .backlink{display:inline-flex;align-items:center;gap:6px;color:#a8d4de;font-size:13px;
+            font-weight:600;text-decoration:none;padding:5px 8px;border-radius:var(--r-sm)}
+  .backlink:hover{background:rgba(255,255,255,.1);color:#fff}
+  .backlink svg{flex:none}
 
   /* progress rail */
   .railwrap{margin-bottom:var(--sp4)}
@@ -185,6 +197,7 @@
 
 <div class="topbar">
   <img class="logo" src="ajs-energy-logo.svg" alt="AJS Energy">
+  <a class="backlink" href="jobs.html">&larr;<span>Jobs</span></a>
   <button class="who" id="whoBtn" type="button">[Engineer name] · [ECS card no.]</button>
 </div>
 <div class="accent"></div>
@@ -544,6 +557,35 @@ const key=(sIdx,fid,r)=>r===undefined?fid:'g'+sIdx+'_'+r+'_'+fid;
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;
   document.body.appendChild(t);setTimeout(()=>t.remove(),2000);}
 
+/* ---------- draft autosave: every field edit is saved to this device so leaving
+   mid-form (closed tab, phone call, low battery) never loses work ---------- */
+const draftKey=id=>'ajsDraft_'+id;
+let draftSaveTimer=null, draftWarnShown=false;
+function saveDraftNow(){
+  if(!form) return;
+  try{
+    localStorage.setItem(draftKey(form.id), JSON.stringify({
+      page, seen:[...seen], V, G, collapsed:[...collapsed], savedAt:Date.now()
+    }));
+  }catch(e){
+    if(!draftWarnShown){
+      draftWarnShown=true;
+      toast('Progress could not be saved on this device (storage full) - keep this tab open');
+    }
+  }
+}
+function saveDraft(){ clearTimeout(draftSaveTimer); draftSaveTimer=setTimeout(saveDraftNow,400); }
+function loadDraftFor(id){
+  try{ const raw=localStorage.getItem(draftKey(id)); return raw?JSON.parse(raw):null; }catch(e){ return null; }
+}
+function clearDraftFor(id){ try{ localStorage.removeItem(draftKey(id)); }catch(e){} }
+function timeAgo(ts){
+  const m=Math.round((Date.now()-ts)/60000);
+  if(m<1) return 'just now'; if(m<60) return m+' min ago';
+  const h=Math.round(m/60); if(h<24) return h+' hour'+(h===1?'':'s')+' ago';
+  return Math.round(h/24)+' day(s) ago';
+}
+
 /* ---------- engineer identity: placeholder, editable on device ---------- */
 const WHO_KEY='ajsEngineerId';
 function loadWho(){ try{return JSON.parse(localStorage.getItem(WHO_KEY));}catch(e){return null;} }
@@ -577,34 +619,57 @@ el('syncbtn').onclick=()=>{const n=queue;queue=0;net();toast(n+' record(s) synce
 function renderPicker(){
   el('picker').innerHTML='';
   FORMS.forEach((f,i)=>{
+    const draft=loadDraftFor(f.id);
+    const wrap=document.createElement('div'); wrap.className='pickwrap';
     const b=document.createElement('button');
     b.className='pick';
     const n=f.pages.reduce((t,p)=>t+p.sections.reduce((s,x)=>s+x.fields.length,0),0);
-    b.innerHTML='<b>'+esc(f.title)+'</b><small>'+esc(f.sub)+' · '+n+' fields across '+
+    b.innerHTML=(draft?'<span class="draftpill">'+ICON.check+'<span>In progress - saved '+timeAgo(draft.savedAt)+'</span></span>':'')+
+                '<b>'+esc(f.title)+'</b><small>'+esc(f.sub)+' · '+n+' fields across '+
                 f.pages.length+' pages</small>';
-    b.onclick=()=>open(i);
-    el('picker').appendChild(b);
+    b.onclick=()=>open(i, !!draft);
+    wrap.appendChild(b);
+    if(draft){
+      const so=document.createElement('button'); so.type='button'; so.className='startover';
+      so.textContent='Discard saved progress and start over';
+      so.onclick=()=>{
+        if(confirm('Discard your saved progress for '+f.title+'? This cannot be undone.')){
+          clearDraftFor(f.id); renderPicker();
+        }
+      };
+      wrap.appendChild(so);
+    }
+    el('picker').appendChild(wrap);
   });
 }
 
-function open(i){
-  form=FORMS[i]; page=0; seen=new Set([0]); V={}; G={}; showMiss=false; collapsed=new Set();
+function open(i, resume){
+  form=FORMS[i]; showMiss=false;
+  const draft = resume ? loadDraftFor(form.id) : null;
+  if(draft){
+    page=draft.page||0; seen=new Set(draft.seen||[0]); V=draft.V||{}; G=draft.G||{};
+    collapsed=new Set(draft.collapsed||[]);
+  } else {
+    page=0; seen=new Set([0]); V={}; G={}; collapsed=new Set();
+    /* one repeat instance to start */
+    form.pages.forEach((p,pi)=>p.sections.forEach((s,si)=>{
+      if(s.repeat) G[pi+'_'+si]=[0];
+    }));
+  }
   el('home').classList.add('hidden');
   el('result').classList.add('hidden');
   el('runner').classList.remove('hidden');
   el('navbar').classList.remove('hidden');
   el('ftitle').textContent=form.title;
   el('fsub').textContent=form.sub;
-  /* one repeat instance to start */
-  form.pages.forEach((p,pi)=>p.sections.forEach((s,si)=>{
-    if(s.repeat) G[pi+'_'+si]=[0];
-  }));
   draw();
+  if(draft) toast('Resumed - your answers are back where you left them');
 }
 
 el('quit').onclick=()=>{
   el('runner').classList.add('hidden'); el('result').classList.add('hidden');
   el('navbar').classList.add('hidden'); el('home').classList.remove('hidden');
+  renderPicker();
   window.scrollTo(0,0);
 };
 el('prev').onclick=()=>{if(page>0){page--;seen.add(page);draw();window.scrollTo(0,0);}};
@@ -957,6 +1022,7 @@ function renderAlerts(){
     m.slice(0,8).map(x=>'<li>'+esc(x.label)+'</li>').join('')+
     (m.length>8?'<li>and '+(m.length-8)+' more…</li>':'')+'</ul></div>';
   el('alerts').innerHTML=html;
+  saveDraft();
 }
 
 /* ---------- submit ---------- */
@@ -992,6 +1058,7 @@ el('submit').onclick=()=>{
     submitted_offline:!online,photo_count:photos,
     values:Object.fromEntries(rows.slice(0,12))};
 
+  clearDraftFor(form.id);
   el('runner').classList.add('hidden');
   el('result').classList.remove('hidden');
   el('result').innerHTML='<div class="out"><h2>'+esc(form.title)+' submitted</h2>'+

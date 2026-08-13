@@ -223,7 +223,7 @@
         '<td data-label="Type">'+esc(FORM_LABEL[j.form_type]||j.form_type)+'</td>'+
         '<td data-label="Status"><span class="pill '+j.status+'">'+esc(j.status.replace('_',' '))+'</span></td>'+
         '<td data-label="Assigned to">'+assignCell+'</td>'+
-        '<td data-label="Form"><a class="startlink" href="'+FORM_FILE[j.form_type]+'" target="_blank" rel="noopener">Start form &rarr;</a></td>'+
+        '<td data-label="Form"><a class="startlink" href="'+FORM_FILE[j.form_type]+'">Start form &rarr;</a></td>'+
         '</tr>';
     }).join('');
     el('listHost').innerHTML =
