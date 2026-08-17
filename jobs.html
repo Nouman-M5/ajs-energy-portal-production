@@ -115,6 +115,20 @@
             display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;flex:none}
   .avatarsm.unassigned{background:var(--mist);color:var(--faint)}
 
+  /* multi-engineer assignment: pills showing who's on a job, plus an editable checkbox panel */
+  .assigneepills{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+  .apill{display:inline-flex;align-items:center;gap:5px;background:#e3f1f5;color:var(--teal);
+         border-radius:999px;padding:3px 10px 3px 4px;font-size:12px;font-weight:600}
+  .apill .av{width:16px;height:16px;border-radius:999px;background:var(--teal);color:#fff;
+             display:flex;align-items:center;justify-content:center;font-size:7.5px;font-weight:800}
+  .apill.unassigned{background:var(--mist);color:var(--faint);padding:3px 10px}
+  .assignedit{background:none;border:1px solid var(--line);border-radius:var(--r-sm);padding:4px 10px;
+              font-size:11.5px;color:var(--navy)}
+  .assigneechecks{border:1px solid var(--line);border-radius:var(--r-md);padding:10px 12px;margin-top:8px;
+                   background:var(--pale);display:flex;flex-direction:column;gap:6px}
+  .assigneechecks label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer}
+  .assigneechecks .empty2{font-size:12.5px;color:var(--faint)}
+
   /* team member rows */
   .teamlist{display:flex;flex-direction:column;gap:10px}
   .teamrow{background:var(--surface);border:1px solid #eaf0f1;border-radius:14px;padding:14px;
@@ -170,7 +184,7 @@
           <option value="enquiry">Client enquiry</option>
         </select>
       </div>
-      <div class="field"><label>Assign to</label><select id="nj-assign"><option value="">Unassigned</option></select></div>
+      <div class="field"><label>Assign to</label><div id="nj-assign" class="assigneechecks"></div></div>
       <div class="field"><label>Client</label><input id="nj-client"></div>
       <div class="field"><label>Site name</label><input id="nj-site"></div>
       <div class="field"><label>Due date</label><input id="nj-due" type="date"></div>
@@ -238,9 +252,17 @@
     el('teamBtn').classList.remove('hidden');
   }
 
-  function assignOptions(selectedId) {
-    return '<option value="">Unassigned</option>' +
-      engineers.map(en => '<option value="'+en.id+'"'+(en.id===selectedId?' selected':'')+'>'+esc(en.full_name||'(unnamed)')+'</option>').join('');
+  // multi-engineer assignment: a job can now have any number of assignees (job_assignees
+  // junction table), not just one. This renders the checkbox list used both in the new-job
+  // panel and in each job card's "Edit" panel.
+  function renderAssigneeChecks(host, selectedIds) {
+    if (!engineers.length) { host.innerHTML = '<span class="empty2">No active engineers yet - add one under Manage team.</span>'; return; }
+    host.innerHTML = engineers.map(en =>
+      '<label><input type="checkbox" value="'+en.id+'"'+(selectedIds.includes(en.id)?' checked':'')+'>'+esc(en.full_name||'(unnamed)')+'</label>'
+    ).join('');
+  }
+  function checkedIds(host) {
+    return [...host.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
   }
 
   const STATUS_LABELS = { new:'New', assigned:'Assigned', in_progress:'In progress', submitted:'Submitted', reviewed:'Reviewed' };
@@ -251,12 +273,15 @@
     return parts.length ? (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase() : '?';
   };
 
-  let allJobs = [], searchQ = '', statusFilter = 'all';
+  let allJobs = [], searchQ = '', statusFilter = 'all', expandedAssign = new Set();
 
   async function loadJobs() {
-    let q = supabase.from('jobs').select('*').order('created_at', { ascending: false });
-    if (!isManager) q = q.eq('assigned_to', me.id);
-    const { data, error } = await q;
+    // job_assignees is the source of truth for who can see/work a job now (a job can have
+    // several engineers on it) - RLS on `jobs` already restricts an engineer to only the rows
+    // they're in job_assignees for, so there's no client-side filter needed here any more.
+    const { data, error } = await supabase.from('jobs')
+      .select('*, job_assignees(engineer_id, profiles(full_name))')
+      .order('created_at', { ascending: false });
     if (error) { el('listHost').innerHTML = '<div class="empty">Could not load jobs: '+esc(error.message)+'</div>'; return; }
     allJobs = data || [];
     renderChips();
@@ -297,9 +322,16 @@
       return;
     }
     const cards = jobs.map(j => {
-      const assigneePill = isManager
-        ? '<select class="assign" data-job="'+j.id+'">'+assignOptions(j.assigned_to)+'</select>'
-        : '<span class="avatarsm">'+initialsOf(me.full_name)+'</span><span class="muted">'+esc(me.full_name || 'You')+'</span>';
+      const assignees = j.job_assignees || [];
+      const pills = assignees.length
+        ? assignees.map(a => {
+            const name = (a.profiles && a.profiles.full_name) || '(unnamed)';
+            return '<span class="apill"><span class="av">'+esc(initialsOf(name))+'</span>'+esc(name)+'</span>';
+          }).join('')
+        : '<span class="apill unassigned">Unassigned</span>';
+      const editBtn = isManager ? '<button type="button" class="assignedit" data-job="'+j.id+'">Edit</button>' : '';
+      const panel = (isManager && expandedAssign.has(j.id))
+        ? '<div class="assigneechecks" data-panel="'+j.id+'"></div>' : '';
       return '<div class="jobcard">' +
         '<div class="row1"><span class="refnum">'+esc(j.reference)+'</span>' +
         '<span class="pill '+j.status+'">'+esc(STATUS_LABELS[j.status] || j.status)+'</span></div>' +
@@ -308,26 +340,57 @@
         '<div class="typerow">'+ICO_CASE+'<span>'+esc(FORM_LABEL[j.form_type]||j.form_type)+'</span></div>' +
         '<div class="divider"></div>' +
         '<div class="row3">' +
-          '<div class="assigneepill">'+assigneePill+'</div>' +
+          '<div class="assigneepills">'+pills+editBtn+'</div>' +
           '<a class="startlink" href="'+FORM_FILE[j.form_type]+'">Start form &rarr;</a>' +
         '</div>' +
+        panel +
       '</div>';
     }).join('');
     el('listHost').innerHTML = '<div class="jobslist">'+cards+'</div>';
 
     if (isManager) {
-      el('listHost').querySelectorAll('select.assign').forEach(sel => {
-        sel.onchange = async () => {
-          const jobId = sel.dataset.job;
-          const newAssignee = sel.value || null;
-          const { error } = await supabase.from('jobs')
-            .update({ assigned_to: newAssignee, status: newAssignee ? 'assigned' : 'new' })
-            .eq('id', jobId);
-          if (error) { alert('Could not reassign: ' + error.message); }
-          loadJobs();
+      // fill in any expanded assignment panels with the live checkbox list
+      el('listHost').querySelectorAll('[data-panel]').forEach(host => {
+        const job = jobs.find(x => x.id === host.dataset.panel);
+        const selectedIds = (job.job_assignees || []).map(a => a.engineer_id);
+        renderAssigneeChecks(host, selectedIds);
+        host.querySelectorAll('input[type=checkbox]').forEach(cb => {
+          cb.onchange = () => saveAssignees(job, checkedIds(host));
+        });
+      });
+      el('listHost').querySelectorAll('.assignedit').forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.dataset.job;
+          if (expandedAssign.has(id)) expandedAssign.delete(id); else expandedAssign.add(id);
+          renderList();
         };
       });
     }
+  }
+
+  async function saveAssignees(job, newIds) {
+    const before = new Set((job.job_assignees || []).map(a => a.engineer_id));
+    const after = new Set(newIds);
+    const toAdd = newIds.filter(id => !before.has(id));
+    const toRemove = [...before].filter(id => !after.has(id));
+    if (toAdd.length) {
+      const { error } = await supabase.from('job_assignees')
+        .insert(toAdd.map(engineer_id => ({ job_id: job.id, engineer_id })));
+      if (error) { alert('Could not add assignee: ' + error.message); return; }
+    }
+    if (toRemove.length) {
+      const { error } = await supabase.from('job_assignees')
+        .delete().eq('job_id', job.id).in('engineer_id', toRemove);
+      if (error) { alert('Could not remove assignee: ' + error.message); return; }
+    }
+    // only auto-flip status between the two "nobody's started yet" states - never downgrade
+    // a job that's already in_progress/submitted/reviewed just because assignees changed
+    if (job.status === 'new' && after.size > 0) {
+      await supabase.from('jobs').update({ status: 'assigned' }).eq('id', job.id);
+    } else if (job.status === 'assigned' && after.size === 0) {
+      await supabase.from('jobs').update({ status: 'new' }).eq('id', job.id);
+    }
+    loadJobs();
   }
 
   async function loadTeam() {
@@ -376,7 +439,7 @@
   }
 
   if (isManager) {
-    el('nj-assign').innerHTML = assignOptions(null);
+    renderAssigneeChecks(el('nj-assign'), []);
     el('nj-ref').value = genReference(el('nj-type').value);
     el('nj-type').onchange = () => { el('nj-ref').value = genReference(el('nj-type').value); };
     el('newJobBtn').onclick = () => { el('teamPanel').classList.add('hidden'); el('newJobPanel').classList.remove('hidden'); };
@@ -409,6 +472,7 @@
       loadTeam(); reloadEngineers();
     };
     el('nj-save').onclick = async () => {
+      const assigneeIds = checkedIds(el('nj-assign'));
       const payload = {
         reference: el('nj-ref').value.trim(),
         form_type: el('nj-type').value,
@@ -416,16 +480,21 @@
         site_name: el('nj-site').value.trim() || null,
         site_address: el('nj-addr').value.trim() || null,
         due_date: el('nj-due').value || null,
-        assigned_to: el('nj-assign').value || null,
-        status: el('nj-assign').value ? 'assigned' : 'new',
+        status: assigneeIds.length ? 'assigned' : 'new',
         created_by: me.id
       };
       if (!payload.reference) { alert('Reference is required'); return; }
-      const { error } = await supabase.from('jobs').insert(payload);
+      const { data: job, error } = await supabase.from('jobs').insert(payload).select().single();
       if (error) { alert('Could not create job: ' + error.message); return; }
+      if (assigneeIds.length) {
+        const { error: assignErr } = await supabase.from('job_assignees')
+          .insert(assigneeIds.map(engineer_id => ({ job_id: job.id, engineer_id })));
+        if (assignErr) { alert('Job created, but could not set assignees: ' + assignErr.message); }
+      }
       el('newJobPanel').classList.add('hidden');
       ['nj-client','nj-site','nj-addr','nj-due'].forEach(id => el(id).value = '');
       el('nj-ref').value = genReference(el('nj-type').value);
+      renderAssigneeChecks(el('nj-assign'), []);
       loadJobs();
     };
   }
