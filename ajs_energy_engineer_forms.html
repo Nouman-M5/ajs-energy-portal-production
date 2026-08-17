@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AJS Energy engineer forms</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:#eef2f4;font-family:Arial,Helvetica,sans-serif;color:#182a32;padding-bottom:78px}
+  button{font-family:inherit;cursor:pointer}
+  input,textarea,select{font-family:inherit}
+  :focus-visible{outline:2px solid #1886a1;outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+  const C = { ink: '#182a32', muted: '#5c6d74', faint: '#8a959a', line: '#dde5e8', paleLine: '#eef2f3',
+    blue: '#1886a1', dark: '#05618e', darker: '#023349', grey: '#eef2f4', white: '#fff', pale: '#eaf5f7',
+    req: '#c1291f', reqBg: '#fdf1ef', warn: '#8a5a00', warnBg: '#fdf6e8', warnLine: '#e8cfa0', ok: '#1e7d52', dk: '#5c6d74',
+    radius: 12, radiusSm: 7, shadow: '0 10px 28px rgba(5,40,55,.10)', shadowSm: '0 2px 10px rgba(5,40,55,.07)',
+    headFont: "Arial,sans-serif", bodyFont: "Arial,sans-serif" };
+  const KW = ['7kW', '11kW', '22kW (shared)', '22kW (per port)'];
+  const MODULES = ['100kW', '200kW', '300kW', '400kW'];
+  const RANGE = {
+    Alpitronic: { models: [
+      { name: 'Hypercharger HYC50', type: 'DC', kw: 50 }, { name: 'Hypercharger HYC200', type: 'DC', kw: 200 },
+      { name: 'Hypercharger HYC400', type: 'DC', kw: 400 }, { name: 'Hypercharger HYC1000', type: 'DC', kw: 1000 }
+    ], variant: { label: 'Power modules installed', options: this?.MODULES, when: m => ['Hypercharger HYC200', 'Hypercharger HYC400'].includes(m) } },
+    Autel: { models: [
+      { name: 'MaxiCharger AC Compact', type: 'AC' }, { name: 'MaxiCharger AC Pro', type: 'AC' }, { name: 'MaxiCharger AC Elite', type: 'AC' },
+      { name: 'MaxiCharger AC Ultra', type: 'AC' }, { name: 'MaxiCharger AC Ultra Street', type: 'AC' },
+      { name: 'MaxiCharger DC Compact', type: 'DC', kw: 40 }, { name: 'MaxiCharger DC Fast', type: 'DC', kw: 120 }
+    ], variant: { label: 'kW Rating', options: this?.KW, when: m => m.includes(' AC ') } },
+    ChargePoint: { models: [
+      { name: 'CP6321B-32A-L5.5', type: 'AC', desc: 'Pedestal mount, tethered cables', mount: 'Pedestal', conn: 'Tethered cable' },
+      { name: 'CP6121B-32A', type: 'AC', desc: 'Pedestal mount, dual socket', mount: 'Pedestal', conn: 'Socket-outlet' },
+      { name: 'CP6323B-32A-L5.5', type: 'AC', desc: 'Wall mount, tethered cables', mount: 'Wall', conn: 'Tethered cable' },
+      { name: 'CP6123B-32A', type: 'AC', desc: 'Wall mount, dual socket', mount: 'Wall', conn: 'Socket-outlet' }
+    ], variant: { label: 'kW Rating', options: this?.KW, when: () => true } },
+    Rolec: { models: [
+      { name: 'Evo', type: 'AC' }, { name: 'Zura', type: 'AC', mount: 'Pedestal' }, { name: 'SecuriCharge', type: 'AC' },
+      { name: 'BasicCharge', type: 'AC' }, { name: 'Quantum', type: 'AC' },
+      { name: 'UltraCharge 80', type: 'DC', kw: 80 }, { name: 'UltraCharge 180', type: 'DC', kw: 180 }, { name: 'UltraCharge 400', type: 'DC', kw: 400 }
+    ], variant: { label: 'kW Rating', options: this?.KW, when: m => !m.startsWith('UltraCharge') } }
+  };
+  Object.values(RANGE).forEach(d => { d.variant.options = d.variant.label === 'Power modules installed' ? MODULES : KW; });
+
+  
+    const root = document.getElementById("app");
+    const T = (id, label, o = {}) => ({ id, label, type: 'text', ...o });
+    const N = (id, label, o = {}) => ({ id, label, type: 'number', ...o });
+    const TA = (id, label, o = {}) => ({ id, label, type: 'textarea', ...o });
+    const YN = (id, label, o = {}) => ({ id, label, type: 'yesno', ...o });
+    const YNA = (id, label, o = {}) => ({ id, label, type: 'ynna', ...o });
+    const R = (id, label, options, o = {}) => ({ id, label, type: 'radio', options, ...o });
+    const P = (id, label, o = {}) => ({ id, label, type: 'photo', ...o });
+    const MP = (id, label, o = {}) => ({ id, label, type: 'multiphoto', ...o });
+    const SIG = (id, label, o = {}) => ({ id, label, type: 'sig', ...o });
+    const GEO = (id, label, o = {}) => ({ id, label, type: 'geo', ...o });
+    const CHG = (id, o = {}) => ({ id, label: 'Charger manufacturer', type: 'charger', ...o });
+    const M = (id, label, unit, o = {}) => ({ id, label, type: 'meas', unit, ...o });
+    
+    const AC = c => c.type === 'AC', DC = c => c.type === 'DC', PME = c => c.earthing === 'TN-C-S (PME) via PEN fault protection device', TT = c => c.earthing === 'Earth rod or earth mat';
+    const OUT = c => c.g('location') === 'Outdoors', IN = c => c.g('location') === 'Indoors', PUB = c => c.g('access') === 'Public access';
+    const SOCK = c => c.conn === 'Socket-outlet', TETH = c => c.conn === 'Tethered cable';
+    const and = (...fs) => c => fs.every(f => f(c)), or = (...fs) => c => fs.some(f => f(c));
+    const EARTHING = ['TN-S', 'TN-C-S (PME) via PEN fault protection device', 'Earth rod or earth mat', 'Could not determine'];
+    const PENSCOPE = and(PME, or(OUT, c => c.g('outdoorVehicle') === 'Yes'));
+
+    const SITE_VALIDATION = { id: 'site-validation', ref: 'SV', title: 'EV Charge Point Site Validation',
+      sub: 'Post install validation. One record per site, one block per charge point.',
+      pages: [
+        { title: 'Site Information', sections: [{ title: 'Site Information', fields: [
+          T('job', 'AJS Energy job reference', { req: 1 }), T('client', 'Client and client reference', { req: 1 }),
+          T('siteName', 'Site name', { req: 1 }), TA('siteAddr', 'Site address', { req: 1 }), T('siteContact', 'Site contact', { req: 1 }),
+          T('contactPhone', 'Contact phone number', { req: 1 }),
+          R('workType', 'Type of work undertaken', ['Maintenance or service visit', 'Build and commission only', 'Complete installation'], { req: 1 }),
+          TA('worksReq', 'Description of works requested by the client'), TA('worksDone', 'Description of works carried out', { req: 1 }),
+          N('bays', 'Number of EV parking bays related to this work', { req: 1, hint: 'This work only, not the site total' })
+        ] }] },
+        { title: 'EV Charge Points', sections: [{ title: 'EV Charge Points', repeat: 'charge point', fields: [
+          CHG('mfr', { req: 1 }), T('serial', 'Unit serial number', { req: 1, hint: 'Required for OZEV grant compliance' }),
+          P('serialPhoto', 'Photo of the serial number label', { req: 1, hint: 'Must be attached to the charger' }),
+          R('location', 'Where is the charge point?', ['Indoors', 'Outdoors'], { req: 1, reg: 'IET CoP 5th Ed Fig 1' }),
+          YN('outdoorVehicle', 'Could a vehicle charged here reasonably be stood outdoors?', { req: 1, when: IN, reg: 'BS 7671 722.411.4.1', hint: 'An indoor unit serving an outdoor bay is treated as outdoors' }),
+          R('access', 'Who can use it?', ['Restricted to staff', 'Visitors and customers', 'Public access'], { req: 1, reg: 'Public Charge Point Regs 2023' }),
+          R('mount', 'How is it mounted?', ['Wall', 'Pedestal or post'], { req: 1 }),
+          P('plinthPhoto', 'Photo of the concrete base or plinth', { req: 1, when: c => c.mount === 'Pedestal or post' }),
+          YN('plinthCondition', 'Is the base level, sound and free of cracking or settlement?', { req: 1, when: c => c.mount === 'Pedestal or post' }),
+          YN('wallFixing', 'Is the wall or substrate sound, and are the fixings correct for it?', { req: 1, when: c => c.mount === 'Wall' }),
+          YN('impact', 'Is protection from vehicle impact provided?', { req: 1, when: OUT, reg: 'BS 7671 722.512.2.201 / .203' }),
+          R('impactType', 'What impact protection is fitted?', ['Stainless steel bollards', 'Hoop barrier', 'Wheel stops', 'Other'], { req: 1, when: and(OUT, c => c.g('impact') === 'Yes') }),
+          T('ipRating', 'IP rating of the enclosure as installed', { when: OUT, reg: 'BS 7671 722.512.2' }),
+          YNA('ventilation', 'Is there space for ventilation and to open all doors and panels?', { req: 1, when: or(IN, DC) }),
+          YN('lighting', 'Is there adequate lighting for safe use?', { req: 1 }), YN('undamaged', 'Is the unit undamaged, level and securely fixed?', { req: 1 }),
+          YN('heights', 'Are controls and connectors between 0.75 m and 1.20 m, and screens between 1.20 m and 1.40 m?', { req: 1, when: PUB, reg: 'PAS 1899:2022, Approved Doc M' }),
+          YN('wheelchair', 'Is the charge point accessible to a wheelchair user?', { req: 1, when: PUB, reg: 'PAS 1899:2022' }),
+          YN('baysMarked', 'Are the bays clearly marked for EV use only?', { when: PUB }),
+          P('bayPhoto', 'Photos clearly showing the charge point and the base it serves', { req: 1 }),
+          YN('contactless', 'Is contactless card payment available at the unit or a nearby terminal?', { req: 1, when: c => PUB(c) && c.kwNum >= 8, reg: 'Public Charge Point Regs 2023', hint: 'A legal requirement on public charge points at 8 kW and above' }),
+          YN('pricing', 'Is the price per kWh displayed before charging begins?', { req: 1, when: c => PUB(c) && c.kwNum >= 8, reg: 'Public Charge Point Regs 2023', hint: 'On the screen or on a sign. Not every unit has a screen.' }),
+          YN('helpline', 'Is a 24/7 helpline number displayed on the unit?', { req: 1, when: c => PUB(c) && c.kwNum >= 8, reg: 'Public Charge Point Regs 2023' }),
+          R('connType', 'What does the vehicle connect to?', ['Tethered cable', 'Socket-outlet'], { req: 1, when: AC, reg: 'BS EN 62196' }),
+          YN('latches', 'Do all holster latches lock and unlock correctly?', { req: 1, when: TETH }),
+          YN('cableCondition', 'Is the tethered cable free of cuts, abrasion and strain at the gland?', { req: 1, when: TETH }),
+          YN('shutters', 'Are the socket shutters and interlock working correctly?', { req: 1, when: SOCK, reg: 'BS 7671 722.55.101' }),
+          { id: 'psHead', type: 'note', info: 1, text: 'Power supply. We have finished with the unit itself and are now looking at the supply feeding it.' },
+          T('dbName', 'Distribution board name and location', { req: 1 }), T('circuitNo', 'Circuit number', { req: 1 }),
+          N('ocpdRating', 'Overcurrent protective device rating in amps', { req: 1 }),
+          R('ocpdType', 'Overcurrent protective device type', ['Type B MCB', 'Type C MCB', 'Fuse', 'RCBO'], { req: 1 }),
+          YN('dedicated', 'Is this a dedicated circuit serving this charge point only?', { req: 1, reg: 'BS 7671 722.311.201', gate: 'No' }),
+          { id: 'dedicatedWarn', type: 'note', danger: 1, when: c => c.g('dedicated') === 'No', text: 'This supply is non-compliant. Section 722 requires a dedicated circuit and its own protective device for each charge point. Speak to the site contact and your manager before going any further.' },
+          YNA('rdcdd', 'Does the unit provide integral DC residual current detection to BS IEC 62955 at 6 mA?', { req: 1, when: AC, reg: 'BS 7671 722.531.3', hint: 'Check the datasheet. N/A only if you genuinely cannot establish it.' }),
+          R('rcdType', 'What RCD type is fitted to the circuit?', ['Type A', 'Type F'], { req: 1, when: and(AC, c => c.g('rdcdd') === 'Yes'), reg: 'BS 7671 722.531.3', hint: 'Integral 6 mA DC detection is declared, so Type A or F is permitted' }),
+          R('rcdTypeB', 'What RCD type is fitted to the circuit?', ['Type B', 'Type B+', 'Not Type B, see observations'], { req: 1, when: and(AC, c => c.g('rdcdd') === 'No'), reg: 'BS 7671 722.531.3', hint: 'No integral DC detection declared, so a Type B RCD is required', gate: 'Not Type B, see observations' }),
+          TA('rcdUnknown', 'Record why the DC detection capability could not be established', { req: 1, when: and(AC, c => c.g('rdcdd') === 'N/A') }),
+          M('rcd1x', 'RCD trip time at 1 times the rated residual current', 'ms', { req: 1, when: AC, reg: 'BS 7671 643.8', max: 300 }),
+          M('rcd5x', 'RCD trip time at 5 times the rated residual current', 'ms', { req: 1, when: AC, reg: 'BS 7671 643.8', max: 40 }),
+          YN('rcdTest', 'Does the on-unit test button operate the device?', { req: 1, when: AC }),
+          { id: 'dcNote', type: 'note', when: DC, text: 'Mode 4 equipment. BS 7671 does not require RCD protection of the DC output to the vehicle, because shock protection on that side is provided by the manufacturer. The checks below therefore cover the AC supply circuit and the manufacturer commissioning.', reg: 'BS 7671 Appendix J2, Note 2 to 722.531.3.101' },
+          YNA('galvanic', 'Does the manufacturer declare galvanic separation between the AC input and DC output?', { req: 1, when: DC, reg: 'BS 7671 722.413' }),
+          YN('acRcd', 'Is an RCD fitted to the AC supply circuit?', { req: 1, when: DC, reg: 'BS 7671 722.531.3.101', hint: 'Required where the supply is TT, where disconnection times cannot be met by the overcurrent device, or where no separation is declared' }),
+          R('acRcdType', 'AC supply circuit RCD type', ['Type A', 'Type B', 'Type F', 'Other'], { req: 1, when: and(DC, c => c.g('acRcd') === 'Yes') }),
+          TA('acRcdWhy', 'Record the basis for omitting an RCD on the AC supply circuit', { req: 1, when: and(DC, c => c.g('acRcd') === 'No', c => !TT(c)) }),
+          { id: 'ttRcdGate', type: 'note', when: and(DC, TT, c => c.g('acRcd') === 'No'), text: 'The supply is TT and no RCD is fitted to the AC supply circuit. This does not meet the disconnection requirements. Do not energise until resolved.', danger: 1 },
+          N('modulesFitted', 'How many power modules are actually fitted?', { req: 1, when: c => DC(c) && c.mfr === 'Alpitronic', hint: 'Confirm against the configured rating recorded above' }),
+          YN('moduleStatus', 'Do all power modules report healthy with no fault codes?', { req: 1, when: DC }),
+          YN('thermal', 'Is the cooling system operating and free of leaks or blocked filters?', { req: 1, when: DC }),
+          YN('dcIsolation', 'Does the internal DC insulation monitoring self test pass?', { req: 1, when: DC, reg: 'BS EN 61851-23' }),
+          YN('emergencyStop', 'Does the emergency stop isolate the unit correctly?', { req: 1, when: DC }),
+          R('earthed', 'How is the charge point earthed?', ['Site earthing system via PEN fault protection device', 'Earth rod, ConduDisc or earth mat', 'TT', 'Could not determine'], { req: 1, when: c => c.earthing !== 'Earth rod or earth mat', reg: 'BS 7671 722.411.4.1, IET CoP 5th Ed' }),
+          R('earthedTT', 'How is the charge point earthed?', ['Site earthing system, TT', 'ConduDisc or earth mat at the charge point', 'Could not determine'], { req: 1, when: c => c.earthing === 'Earth rod or earth mat', reg: 'BS 7671 722.411.4.1, IET CoP 5th Ed', hint: 'The supply is TT, so no PME options apply' }),
+          R('penMethod', 'How is open PEN fault protection provided?', ['Integral to the charge point', 'External PEN fault detection device', 'Earth rod or earth mat', 'None fitted'], { req: 1, when: PENSCOPE, reg: 'BS 7671 722.411.4.1', hint: 'PME supply with an outdoor vehicle space, so one of these is required', gate: 'None fitted' }),
+          P('penPhoto', 'Photo of the PEN fault protection device or the earth electrode', { req: 1, when: and(PENSCOPE, c => c.g('penMethod') !== 'None fitted') }),
+          YN('penTest', 'Has the PEN fault protection function been proven by test or the manufacturer procedure?', { req: 1, when: and(PENSCOPE, c => c.g('penMethod') !== 'None fitted'), reg: 'BS 7671 722.411.4.1(iii)', hint: 'The trip threshold is 70 V rms', gate: 'No' }),
+          { id: 'noPenNote', type: 'note', when: and(PME, IN, c => c.g('outdoorVehicle') === 'No'), text: 'PME supply but the vehicle space is indoors, so Regulation 722.411.4.1 does not require open PEN fault protection here. Record the reasoning in observations.', info: 1 },
+          { id: 'ttNote', type: 'note', when: TT, text: 'TT supply. No PME specific protection is required, but confirm RCD protection and electrode resistance meet Section 411.', info: 1 },
+          YN('simultaneous', 'Simultaneous Touch Assessment. Can a person touch the vehicle and metalwork on a different earthing system at the same time?', { req: 1, when: OUT, reg: 'IET CoP 5th Ed, simultaneous contact assessment', hint: 'Lamp posts, railings, cladding, adjacent buildings', gate: 'Yes' }),
+          TA('simultaneousAction', 'What has been done to remove the simultaneous contact risk?', { req: 1, when: and(OUT, c => c.g('simultaneous') === 'Yes') }),
+          M('zs', 'Earth fault loop impedance Zs at the charge point', 'Ohms', { req: 1, reg: 'BS 7671 643.7' }),
+          YN('phaseVolts', 'Are all phase voltages correct, 400 V between phases and 230 V phase to neutral?', { req: 1, when: c => c.kwNum > 7.4 || c.type === 'DC' }),
+          T('instrument', 'Test instrument serial number', { req: 1 }), { id: 'calDue', label: 'Instrument calibration due date', type: 'date', req: 1 },
+          { id: 'elecHead', type: 'note', info: 1, text: 'Electrical and safety, cover off. Do all of this before you close the unit up, so you are not taking the cover off twice.' },
+          P('connPhoto', 'Close up photo of the electrical connections inside the unit', { req: 1 }),
+          MP('insidePhotos', 'Photos of the inside of the unit', { req: 1 }),
+          YN('terminals', 'Is all wiring fully inserted and every connection clean and snug?', { req: 1 }),
+          YN('torqued', 'Have all connections been torqued to the manufacturer figures?', { req: 1 }),
+          YN('cleanEnclosure', 'Is the enclosure free of swarf, strands and debris?', { req: 1 }),
+          YN('covers', 'Are all covers fitted and all fasteners tight?', { req: 1 }),
+          { id: 'commHead', type: 'note', info: 1, text: 'Commissioning. Manufacturer setup, connectivity and a proven live session.' },
+          YN('wizard', 'Has the manufacturer installation or commissioning wizard been completed?', { req: 1 }),
+          YN('firmware', 'Is the unit running current firmware?', { req: 1 }),
+          YN('backOffice', 'Is the unit registered and communicating with the back office?', { req: 1, when: c => PUB(c) || DC(c) }),
+          MP('signalPhotos', 'Photos of signal readings from the unit and from a hand held reader', { req: 1 }),
+          YN('smartRegs', 'Does the unit meet the Electric Vehicles (Smart Charge Points) Regulations 2021?', { req: 1, when: c => c.kwNum > 0 && c.kwNum <= 50 && c.g('access') === 'Restricted to staff', reg: 'SI 2021/1467', hint: 'Applies to private charge points rated 50 kW or less installed after 30 June 2022' }),
+          YN('siteKey', 'Does the site manager hold a charging station key?', { req: 1 }),
+          YN('chargeSession', 'Has a live charging session been verified with a vehicle or simulator?', { req: 1, reg: 'IET CoP 5th Ed, vehicle simulators' }),
+          P('coverPhoto', 'Photo of the unit with the cover on', { req: 1, hint: 'Whole unit in frame' }),
+          P('screenPhoto', 'Photo of the screen', { when: c => c.type === 'DC' || c.mfr === 'ChargePoint' || (c.model || '').includes('Ultra') }),
+          YN('labels', 'Are all warning and identification labels fitted?', { req: 1, reg: 'BS 7671 514' }),
+          MP('installPhotos', 'Photos of the cable route and containment', { req: 1 }),
+          YN('safeToOperate', 'Is the charge point safe to leave in service?', { req: 1, gate: 'No' }),
+          TA('observations', 'Observations for this charge point')
+        ] }] },
+        { title: 'Power Supply', sections: [{ title: 'Power Supply', fields: [
+          R('earthing', 'Site earthing arrangement at the incoming supply', EARTHING, { req: 1, reg: 'BS 7671 542', hint: 'Not at the charge point. This drives which questions follow.' }),
+          TA('earthLimit', 'Why could the earthing arrangement not be verified?', { req: 1, when: c => c.earthing === 'Could not determine', hint: 'This is a limitation and will be recorded on the certificate' }),
+          M('ra', 'Earth electrode resistance Ra', 'Ohms', { req: 1, when: TT, reg: 'BS 7671 411.5.3', max: 200, hint: 'TT supply, so the electrode resistance is required' }),
+          YN('spareCapacity', 'Does the distribution board have capacity for further charge points?', { hint: 'Consider potential total electrical load' }),
+          YN('loadMgmt', 'Is a load management or demand limiting system installed?', { reg: 'BS 7671 722.311 / A4:2026' }),
+          T('loadMgmtSet', 'What is the load management set to, and where are the CT clamps fitted?', { req: 1, when: c => c.s('loadMgmt') === 'Yes' }),
+          MP('loadMgmtPhotos', 'Photos of the CT clamp positions', { req: 1, when: c => c.s('loadMgmt') === 'Yes' }),
+          YN('dnoNotified', 'Has the DNO application or notification been completed?', { reg: 'ENA EREC G12/4, G99, G100' }),
+          T('dnoRef', 'DNO reference', { req: 1, when: c => c.s('dnoNotified') === 'Yes' }),
+          YN('spd', 'Is a surge protective device fitted on this circuit?', { reg: 'BS 7671 A4:2026 Appendix 6', hint: 'A4:2026 added an SPD field to the model forms' }),
+          T('spdType', 'SPD type and rating', { req: 1, when: c => c.s('spd') === 'Yes' }),
+          YN('afdd', 'Is an arc fault detection device fitted?', { reg: 'BS 7671 A4:2026 Appendix 6' }),
+          T('afddType', 'AFDD type and rating', { req: 1, when: c => c.s('afdd') === 'Yes' })
+        ] }] },
+        { title: 'Distribution board', sections: [{ title: 'Distribution board', fields: [
+          YNA('brkSize', 'Do the installed breakers match the configuration set in the chargers?'),
+          YNA('brkTorque', 'Have all board connections forming part of this work been torqued correctly?'),
+          YNA('dbEarth', 'Does the board have correct means of earthing in line with BS 7671?', { reg: 'BS 7671 542' }),
+          YNA('blanks', 'Are all blanks fitted with no gaps?'), YNA('cableLabels', 'Are all outgoing cables labelled at both ends?'),
+          MP('dbPhotos', 'Photos of the board installation', { req: 1 })
+        ] }] },
+        { title: 'Sign off', sections: [{ title: 'Completion', fields: [
+          YNA('tidy', 'Is the parking area clear of packaging and debris?', { req: 1 }), MP('tidyPhotos', 'Photos of the work area left clean and tidy', { req: 1 }),
+          R('otherEvcps', 'Have all other charge points on site been visually inspected before leaving?', ['All charge points on site visually inspected', 'No other charge points on site'], { req: 1 }),
+          TA('otherFindings', 'What did you find on the other charge points?', { req: 1, when: c => c.s('otherEvcps') === 'All charge points on site visually inspected' }),
+          TA('addInfo', 'Any additional information'), T('engName', 'Engineer name', { req: 1 }), SIG('engSig', 'Engineer signature', { req: 1 }),
+          T('clientName', 'Client name'), SIG('clientSig', 'Client signature', { req: 1 }),
+          { id: 'date', label: 'Date', type: 'date', req: 1 }, { id: 'time', label: 'Time', type: 'time', req: 1 }
+        ] }] }
+      ] };
+
+    const SAFETY_INSPECTION = { id: 'safety-inspection', ref: 'SI', title: 'EVCP Safety Inspection',
+      sub: 'Periodic inspection of charge points already in service.',
+      pages: [
+        { title: 'Site Information', sections: [{ title: 'Site Information', fields: [
+          T('job', 'AJS Energy job reference', { req: 1 }), T('client', 'Client', { req: 1 }), T('clientRef', 'Client reference'),
+          T('siteName', 'Site name', { req: 1 }), TA('siteAddr', 'Site address', { req: 1 }),
+          R('earthing', 'Site earthing arrangement at the incoming supply', EARTHING, { req: 1, reg: 'BS 7671 542', hint: 'Not at the charge point. This drives which questions follow.' }),
+          TA('earthLimit', 'Why could the earthing arrangement not be verified?', { req: 1, when: c => c.earthing === 'Could not determine' }),
+          YN('installedByAjs', 'Did AJS Energy install this equipment?'),
+          R('recordsHeld', 'What installation records are available on site?', ['Full records including certificates', 'Partial records', 'None'], { req: 1 }),
+          TA('recordsGap', 'Note what is missing and what could not be verified as a result', { req: 1, when: c => c.s('recordsHeld') !== 'Full records including certificates', hint: 'Taking over an estate without records is itself a finding' })
+        ] }] },
+        { title: 'EV Charge Points', sections: [{ title: 'EV Charge Points', repeat: 'charge point', fields: [
+          T('evcpRef', 'Charge point name or reference'), GEO('geo', 'Location of the charge point'), CHG('mfr', { req: 1 }),
+          T('serial', 'Unit serial number', { req: 1 }), P('serialPhoto', 'Photo of the serial number label', { req: 1 }),
+          R('location', 'Where is the charge point?', ['Indoors', 'Outdoors'], { req: 1 }),
+          YN('outdoorVehicle', 'Could a vehicle charged here reasonably be stood outdoors?', { req: 1, when: IN, reg: 'BS 7671 722.411.4.1' }),
+          R('access', 'Who can use it?', ['Restricted to staff', 'Visitors and customers', 'Public access'], { req: 1 }),
+          R('mount', 'How is it mounted?', ['Wall', 'Pedestal or post'], { req: 1 }),
+          YN('undamaged', 'Is the unit undamaged, level and securely fixed?', { req: 1 }), P('coverPhoto', 'Photo of the unit with the cover on', { req: 1 }),
+          P('plinthPhoto', 'Photo of the base or plinth', { when: c => c.mount === 'Pedestal or post' }),
+          YN('plinthCondition', 'Is the base sound, with no cracking, settlement or trip hazard?', { req: 1, when: c => c.mount === 'Pedestal or post' }),
+          YN('waterIngress', 'Is the enclosure free of water ingress, corrosion and insect nesting?', { req: 1, when: OUT }),
+          YN('impact', 'Is impact protection present and undamaged?', { req: 1, when: OUT, reg: 'BS 7671 722.512.2.203' }),
+          YNA('ventilation', 'Is there still space for ventilation and to open all doors and panels?', { req: 1, when: or(IN, DC) }),
+          YN('lighting', 'Is there adequate lighting for safe use?', { req: 1 }),
+          YN('labels', 'Are all warning and identification labels present and legible?', { req: 1, reg: 'BS 7671 514' }),
+          R('connType', 'What does the vehicle connect to?', ['Tethered cable', 'Socket-outlet'], { req: 1, when: AC }),
+          YN('cableCondition', 'Is the tethered cable free of cuts, abrasion and strain damage?', { req: 1, when: TETH, gate: 'No' }),
+          YN('latches', 'Do all holster latches lock and unlock correctly?', { req: 1, when: TETH }),
+          YN('shutters', 'Are the socket shutters and interlock working correctly?', { req: 1, when: SOCK, gate: 'No' }),
+          YN('heights', 'Are controls and connectors between 0.75 m and 1.20 m, and screens between 1.20 m and 1.40 m?', { req: 1, when: PUB, reg: 'PAS 1899:2022' }),
+          YN('wheelchair', 'Is the charge point accessible to a wheelchair user?', { req: 1, when: PUB }),
+          YN('contactless', 'Is contactless card payment working?', { req: 1, when: c => PUB(c) && c.kwNum >= 8, reg: 'Public Charge Point Regs 2023' }),
+          YN('helpline', 'Is the 24/7 helpline number displayed and legible?', { req: 1, when: c => PUB(c) && c.kwNum >= 8, reg: 'Public Charge Point Regs 2023' }),
+          T('dbName', 'Distribution board name and location'), T('circuitNo', 'Circuit number'), N('ocpdRating', 'Overcurrent protective device rating in amps'),
+          T('ocpdType', 'Overcurrent protective device type'),
+          YNA('rdcdd', 'Does the unit provide integral DC residual current detection to BS IEC 62955 at 6 mA?', { req: 1, when: AC, reg: 'BS 7671 722.531.3' }),
+          YNA('rcdCorrect', 'Is the RCD type correct for this equipment?', { req: 1, when: AC, reg: 'BS 7671 722.531.3', gate: 'No', hint: 'Type A or F where integral 6 mA DC detection is declared, otherwise Type B' }),
+          T('rcdFitted', 'What RCD type is actually fitted?', { req: 1, when: AC }),
+          M('rcd1x', 'RCD trip time at 1 times the rated residual current', 'ms', { when: AC, reg: 'BS 7671 643.8', max: 300 }),
+          M('rcd5x', 'RCD trip time at 5 times the rated residual current', 'ms', { when: AC, reg: 'BS 7671 643.8', max: 40 }),
+          { id: 'dcNote', type: 'note', when: DC, text: 'Mode 4 equipment. RCD protection is not required on the DC output. Inspect the AC supply circuit protection and the manufacturer diagnostics instead.', reg: 'BS 7671 Appendix J2' },
+          YN('acRcd', 'Is an RCD fitted to the AC supply circuit?', { when: DC }), YN('moduleStatus', 'Do all power modules report healthy with no fault codes?', { req: 1, when: DC }),
+          YN('thermal', 'Is the cooling system clear and operating?', { req: 1, when: DC }), N('modulesFitted', 'How many power modules are fitted?', { when: c => DC(c) && c.mfr === 'Alpitronic' }),
+          R('earthed', 'How is the charge point earthed?', ['Site earthing system via PEN fault protection device', 'Earth rod, ConduDisc or earth mat', 'TT', 'Could not determine'], { req: 1, when: c => c.earthing !== 'Earth rod or earth mat', reg: 'BS 7671 722.411.4.1' }),
+          R('earthedTT', 'How is the charge point earthed?', ['Site earthing system, TT', 'ConduDisc or earth mat at the charge point', 'Could not determine'], { req: 1, when: c => c.earthing === 'Earth rod or earth mat', reg: 'BS 7671 722.411.4.1', hint: 'The supply is TT, so no PME options apply' }),
+          YNA('penFitted', 'Is compliant open PEN fault protection present?', { req: 1, when: PENSCOPE, reg: 'BS 7671 722.411.4.1', gate: 'No' }),
+          R('penMethod', 'How is it provided?', ['Integral to the charge point', 'External PEN fault detection device', 'Earth rod or earth mat'], { req: 1, when: and(PENSCOPE, c => c.g('penFitted') === 'Yes') }),
+          P('penPhoto', 'Photo of the PEN fault protection device or electrode', { when: and(PENSCOPE, c => c.g('penFitted') === 'Yes') }),
+          { id: 'ttNote', type: 'note', when: TT, text: 'TT supply, so no PME specific protection applies. Confirm the electrode and RCD arrangement instead.', info: 1 },
+          YN('simultaneous', 'Simultaneous Touch Assessment. Can a person touch the vehicle and metalwork on a different earthing system at the same time?', { req: 1, when: OUT, reg: 'IET CoP 5th Ed', gate: 'Yes' }),
+          M('zs', 'Earth fault loop impedance Zs at the charge point', 'Ohms', { req: 1, reg: 'BS 7671 643.7' }), T('instrument', 'Test instrument serial number', { req: 1 }),
+          MP('signalPhotos', 'Photos of signal readings from the unit and a hand held reader', { req: 1 }), MP('generalPhotos', 'Photos of the general installation, labelling and car park', { req: 1 }),
+          R('utilisation', 'How heavily is this unit used?', ['Lightly used', 'Moderately used', 'Heavily used', 'Not known'], { req: 1, hint: 'Drives the recommended maintenance tier' }),
+          YN('safeToOperate', 'Is the charge point safe to remain in operation?', { req: 1, gate: 'No' }),
+          TA('isolationAction', 'Record the isolation carried out and who was informed', { req: 1, when: c => c.g('safeToOperate') === 'No' }),
+          TA('observations', 'Observations for this charge point')
+        ] }] },
+        { title: 'Sign off', sections: [{ title: 'Signatures', fields: [
+          TA('addInfo', 'Any additional information'), R('nextDue', 'Recommended interval to the next inspection', ['3 months', '6 months', '12 months', '3, 6 and 12 combined', 'Remedial works required before the next inspection'], { req: 1 }),
+          T('engName', 'Engineer name', { req: 1 }), SIG('engSig', 'Engineer signature', { req: 1 }), T('clientName', 'Client name'), SIG('clientSig', 'Client signature'),
+          { id: 'date', label: 'Date', type: 'date', req: 1 }, { id: 'time', label: 'Time', type: 'time', req: 1 }
+        ] }] }
+      ] };
+
+    const SURFACES = ['Grass, soil or gravel', 'Tarmac', 'Concrete', 'Reinforced concrete', 'Block paving', 'Slab paving'];
+    const has = s => c => (c.s('surfaces') || []).includes(s);
+    const BASES = c => c.s('basesReq') === 'Yes';
+    const PRECAST = c => c.s('ajsPrecast') === 'Yes';
+    const WETPOUR = c => c.s('ajsPrecast') === 'No';
+    const AC_BASES = c => BASES(c) && Number(c.s('acBaseQty')) > 0;
+    const DC_BASES = c => BASES(c) && Number(c.s('dcBaseQty')) > 0;
+    const CIVILS = { id: 'civils', ref: 'Q', title: 'Civil Engineering Document', sub: 'Measured quantities for groundworks, bases and protection.',
+      pages: [
+        { title: 'Quote', sections: [{ title: 'Quote details', fields: [
+          T('quoteNo', 'AJS Energy quote reference'), TA('siteAddr', 'Site address', { req: 1 }), T('surveyor', 'Surveyed by', { req: 1 }),
+          { id: 'surveyDate', label: 'Survey date', type: 'date', req: 1 }
+        ] }] },
+        { title: 'Ground works', sections: [{ title: 'Cable route', fields: [
+          { id: 'surfaces', label: 'Which surfaces does the cable route cross?', type: 'multi', options: SURFACES, req: 1, hint: 'Only the surfaces you tick will ask for a length' },
+          N('softDig', 'Grass, soil or gravel, soft dig in metres', { dec: 1, req: 1, when: has('Grass, soil or gravel'), hint: 'Includes 110 mm cable duct and warning tile tape' }),
+          N('hardTarmac', 'Tarmac, hard dig in metres', { dec: 1, req: 1, when: has('Tarmac'), hint: 'Includes 110 mm cable duct and warning tile tape' }),
+          N('hardConcrete', 'Concrete, hard dig in metres', { dec: 1, req: 1, when: has('Concrete'), hint: 'Includes 110 mm cable duct and warning tile tape' }),
+          N('hardReinforced', 'Reinforced concrete, hard dig in metres', { dec: 1, req: 1, when: has('Reinforced concrete'), hint: 'Includes 110 mm cable duct and warning tile tape' }),
+          N('blockPaving', 'Block paving in metres', { dec: 1, req: 1, when: has('Block paving'), hint: 'Includes 110 mm cable duct and tile tape, lifted and relaid' }),
+          N('slabPaving', 'Slab paving in metres', { dec: 1, req: 1, when: has('Slab paving'), hint: 'Includes 110 mm cable duct and tile tape, lifted and relaid' }),
+          YN('extraDuct', 'Is additional ducting required alongside the included duct?', { req: 1, hint: 'No additional digging' }),
+          N('duct110', 'Additional 110 mm ducting in metres', { dec: 1, req: 1, when: c => c.s('extraDuct') === 'Yes' }), N('duct63', 'Additional 63 mm ducting in metres', { dec: 1, req: 1, when: c => c.s('extraDuct') === 'Yes' }),
+          YN('chambers', 'Are cable access chambers required?', { req: 1 }),
+          N('chamberQty', 'How many chambers?', { req: 1, when: c => c.s('chambers') === 'Yes' }),
+          YN('reinstate', 'Is like for like surface reinstatement required?', { req: 1 }),
+          TA('routeNotes', 'Notes on the route, obstructions and services', {})
+        ] }] },
+        { title: 'Bases', sections: [{ title: 'Mounting bases', fields: [
+          YN('basesReq', 'Are charge point mounting bases required?', { req: 1 }),
+          YN('ajsPrecast', 'Is AJS Energy providing precast bases?', { req: 1, when: BASES,
+            hint: 'No means the civils contractor pours them wet on site' }),
+          N('acBaseQty', 'AC charger base quantity', { req: 1, when: BASES }),
+          T('acBaseSize', 'Size of precast base, AC', { req: 1, when: and(AC_BASES, PRECAST),
+            hint: 'Length by width by depth, so the contractor knows what is arriving' }),
+          T('acBaseSizeWet', 'Size of wet poured concrete base, AC', { req: 1, when: and(AC_BASES, WETPOUR),
+            hint: 'Length by width by depth for the contractor to form' }),
+          YN('acEdging', 'Is precast edging required to the AC bases?', { req: 1, when: AC_BASES }),
+          N('dcBaseQty', 'DC charger base quantity', { req: 1, when: BASES }),
+          T('dcBaseSize', 'Size of precast base, DC', { req: 1, when: and(DC_BASES, PRECAST),
+            hint: 'Length by width by depth' }),
+          T('dcBaseSizeWet', 'Size of wet poured concrete base, DC', { req: 1, when: and(DC_BASES, WETPOUR),
+            hint: 'Length by width by depth for the contractor to form' }),
+          YN('dcEdging', 'Is precast edging required to the DC bases?', { req: 1, when: DC_BASES }),
+          YN('grpBase', 'Is a GRP enclosure base required?', { req: 1 }),
+          T('grpSize', 'Size of the GRP enclosure base', { req: 1, when: c => c.s('grpBase') === 'Yes',
+            hint: 'Length by width by depth' })
+        ] }] },
+        { title: 'Protection', sections: [
+          { title: 'Protective barriers', fields: [
+            YN('barriers', 'Is any impact protection required?', { req: 1, reg: 'BS 7671 722.512.2.203' }),
+            { id: 'barrierTypes', label: 'Which types?', type: 'multi', options: ['Stainless steel bollards, AJS supplied', 'Hoop barriers, AJS supplied', 'Bollards, client supplied', 'Hoop barriers, client supplied', 'Other'], req: 1, when: c => c.s('barriers') === 'Yes' },
+            N('ssBollards', 'Stainless steel bollards, AJS supplied, quantity', { req: 1, when: c => (c.s('barrierTypes') || []).includes('Stainless steel bollards, AJS supplied') }),
+            N('hoopBarriers', 'Hoop barriers, AJS supplied, quantity', { req: 1, when: c => (c.s('barrierTypes') || []).includes('Hoop barriers, AJS supplied') }),
+            N('clientBollards', 'Bollards, client supplied, quantity to install', { req: 1, when: c => (c.s('barrierTypes') || []).includes('Bollards, client supplied') }),
+            N('clientHoops', 'Hoop barriers, client supplied, quantity to install', { req: 1, when: c => (c.s('barrierTypes') || []).includes('Hoop barriers, client supplied') }),
+            T('barrierOther', 'Other protection, please specify', { req: 1, when: c => (c.s('barrierTypes') || []).includes('Other') })
+          ] },
+          { title: 'Other details', fields: [
+            YN('signPosts', 'Are EV parking sign posts required?', { hint: 'AJS Energy to free issue posts and signs' }), N('signQty', 'How many sign posts?', { req: 1, when: c => c.s('signPosts') === 'Yes' }),
+                       YN('welfare', 'Is welfare available on site?'), TA('welfareNote', 'What welfare is needed and who is providing it?', { req: 1, when: c => c.s('welfare') === 'No', hint: 'For example, AJS Energy to provide portable toilets' }),
+            YN('permits', 'Are permits, road closures or traffic management required?'), TA('permitDetail', 'Detail the permits or traffic management required', { req: 1, when: c => c.s('permits') === 'Yes' }),
+            TA('notes', 'Additional notes')
+          ] },
+          { title: 'Images', fields: [P('aerial', 'Aerial view of the site', { req: 1 }), MP('multi', 'Photos of the route and locations', { req: 1 })] }
+        ] }
+      ] };
+
+    const FORMS = [SITE_VALIDATION, SAFETY_INSPECTION, CIVILS];
+
+    let form = null, page = 0, seen = new Set(), V = {}, G = {}, showMiss = false, online = true, queue = 0;
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const key = (si, fid, r) => r === undefined ? fid : 'g' + si + '_' + r + '_' + fid;
+    const S = (elm, o) => { Object.assign(elm.style, o); return elm; };
+    const mk = (tag, styles, props) => { const e = document.createElement(tag); if (styles) S(e, styles); if (props) Object.assign(e, props); return e; };
+
+    function toast(m) {
+      const t = mk('div', { position: 'fixed', left: '50%', bottom: '88px', transform: 'translateX(-50%)', background: C.dark, color: '#fff', padding: '10px 20px', borderRadius: C.radiusSm + 'px', fontSize: '14px', zIndex: 30, fontFamily: C.bodyFont, boxShadow: C.shadow });
+      t.textContent = m; root.appendChild(t); setTimeout(() => t.remove(), 2000);
+    }
+    function ctx(si, r) {
+      const g = k => V[key(si, k, r)];
+      const mfr = g('mfr'), model = V[key(si, 'mfr', r) + '_model'], variant = V[key(si, 'mfr', r) + '_variant'];
+      const m = mfr && RANGE[mfr] ? RANGE[mfr].models.find(x => x.name === model) : null;
+      let kwNum = 0;
+      if (m) { if (m.type === 'DC') kwNum = variant && /^\d+kW$/.test(variant) ? parseInt(variant) : (m.kw || 0); else kwNum = variant ? parseFloat(variant) || 0 : 0; }
+      return { g, s: k => V[k], mfr: mfr || null, model: model || null, variant: variant || null, type: m ? m.type : null, kw: m ? m.kw : null, kwNum,
+        conn: m && m.conn ? m.conn : g('connType'), mount: m && m.mount ? m.mount : g('mount'), earthing: V['earthing'] };
+    }
+    function visible(f, si, r) { return !f.when || !!f.when(ctx(si, r)); }
+    function walk(cb) { form.pages.forEach((p, pi) => p.sections.forEach((s, si) => { const sk = pi + '_' + si;
+      if (s.repeat) (G[sk] || []).forEach(r => s.fields.forEach(f => cb(f, si, r, pi, s))); else s.fields.forEach(f => cb(f, si, undefined, pi, s)); })); }
+    function prune() { let cleared = 0; walk((f, si, r) => { if (f.type === 'note') return; if (visible(f, si, r)) return;
+      const k = key(si, f.id, r); if (V[k] !== undefined && !(Array.isArray(V[k]) && V[k].length === 0)) { delete V[k]; cleared++; }
+      if (f.type === 'charger') { delete V[k + '_model']; delete V[k + '_variant']; } if (f.type === 'meas') delete V[k + '_lim']; }); return cleared; }
+
+    const elBy = id => root.querySelector('#' + id);
+    function net() {
+      S(elBy('dot'), { background: online ? C.ok : C.warn });
+      elBy('netxt').textContent = online ? 'Online' : 'Offline, capture continues';
+      elBy('netbtn').textContent = online ? 'Go offline' : 'Go online';
+      elBy('pill').style.display = queue ? 'inline-flex' : 'none';
+      elBy('pill').textContent = queue + (queue === 1 ? ' record waiting' : ' records waiting');
+      elBy('syncbtn').style.display = (online && queue) ? 'inline-flex' : 'none';
+    }
+
+    function renderPicker() {
+      const p = elBy('picker'); p.innerHTML = '';
+      FORMS.forEach((f, i) => {
+        const total = f.pages.reduce((t, pg) => t + pg.sections.reduce((s, x) => s + x.fields.length, 0), 0);
+        const cond = f.pages.reduce((t, pg) => t + pg.sections.reduce((s, x) => s + x.fields.filter(y => y.when).length, 0), 0);
+        const b = mk('button', { display: 'block', width: '100%', textAlign: 'left', background: C.white, border: '1px solid ' + C.line, borderLeft: '4px solid ' + C.blue, borderRadius: C.radiusSm + 'px', padding: '17px 18px', marginBottom: '11px', boxShadow: C.shadowSm, fontFamily: C.bodyFont });
+        b.onmouseenter = () => S(b, { background: C.pale, borderLeftColor: C.dark }); b.onmouseleave = () => S(b, { background: C.white, borderLeftColor: C.blue });
+        const strong = mk('b', { display: 'block', color: C.dark, fontSize: '15.5px', fontFamily: C.headFont, fontWeight: 700 }); strong.textContent = f.title;
+        const small = mk('small', { color: C.muted, fontSize: '13px', display: 'block', marginTop: '4px', lineHeight: 1.5 }); small.innerHTML = esc(f.sub) + '<br>' + total + ' questions defined, ' + cond + ' of them conditional';
+        b.append(strong, small); b.onclick = () => open(i); p.appendChild(b);
+      });
+    }
+
+    function open(i) {
+      form = FORMS[i]; page = 0; seen = new Set([0]); V = {}; G = {}; showMiss = false;
+      elBy('home').style.display = 'none'; elBy('result').style.display = 'none';
+      elBy('runner').style.display = 'block'; elBy('navbar').style.display = 'flex';
+      elBy('ftitle').textContent = form.title; elBy('fsub').textContent = form.sub;
+      form.pages.forEach((p, pi) => p.sections.forEach((s, si) => { if (s.repeat) G[pi + '_' + si] = [0]; }));
+      draw(); window.scrollTo(0, 0);
+    }
+
+    function draw() {
+      prune();
+      const rail = elBy('rail'); rail.innerHTML = '';
+      form.pages.forEach((p, i) => {
+        const b = mk('button', { flex: 1, minWidth: '58px', border: 'none', padding: '8px 4px', fontSize: '11px', borderRadius: '5px', fontFamily: C.bodyFont,
+          background: i === page ? C.dark : seen.has(i) ? C.pale : C.grey, color: i === page ? '#fff' : seen.has(i) ? C.dark : C.muted, fontWeight: i === page ? 700 : 400 });
+        b.textContent = p.title; b.onclick = () => { page = i; seen.add(page); draw(); window.scrollTo(0, 0); }; rail.appendChild(b);
+      });
+      elBy('prev').disabled = page === 0; elBy('next').disabled = page === form.pages.length - 1;
+      const prevBtn = elBy('prev'); S(prevBtn, { opacity: page === 0 ? .4 : 1, cursor: page === 0 ? 'not-allowed' : 'pointer' });
+      const nextBtn = elBy('next'); S(nextBtn, { opacity: page === form.pages.length - 1 ? .4 : 1, cursor: page === form.pages.length - 1 ? 'not-allowed' : 'pointer' });
+
+      const host = elBy('page'); host.innerHTML = '';
+      form.pages[page].sections.forEach((s, si) => {
+        const wrap = mk('div', { background: C.white, border: '1px solid ' + C.line, borderRadius: C.radius + 'px', marginBottom: '16px', boxShadow: C.shadowSm });
+        const h2 = mk('h2', { margin: 0, padding: '13px 16px', fontSize: '15.5px', color: C.dark, borderBottom: '1px solid ' + C.line, fontFamily: C.headFont, fontWeight: 700 });
+        const body = mk('div'); let shown = 0, defined = 0;
+
+        if (s.repeat) {
+          const rows = G[page + '_' + si];
+          rows.forEach((r, idx) => {
+            const rep = mk('div', { border: '1px solid ' + C.line, borderLeft: '4px solid ' + C.blue, margin: '0 0 12px', background: C.white, borderRadius: '0 ' + C.radiusSm + 'px ' + C.radiusSm + 'px 0' });
+            const head = mk('div', { padding: '11px 15px', background: C.pale, borderBottom: '1px solid ' + C.line, display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' });
+            const c = ctx(si, r);
+            const strong = mk('b', { color: C.dark, fontSize: '14px', fontFamily: C.headFont, fontWeight: 700 }); strong.textContent = s.repeat.replace(/^./, x => x.toUpperCase()) + ' ' + (idx + 1);
+            head.appendChild(strong);
+            if (c.type) { const badge = mk('span', { background: C.dark, color: '#fff', borderRadius: '4px', fontSize: '11px', padding: '2px 8px', fontWeight: 700, fontFamily: C.bodyFont }); badge.textContent = (c.type === 'DC' ? 'Mode 4 DC' : 'Mode 3 AC') + (c.kwNum ? ' · ' + c.kwNum + ' kW' : ''); head.appendChild(badge); }
+            if (rows.length > 1) { const rm = mk('button', { marginLeft: 'auto', background: 'none', border: 'none', color: C.req, fontSize: '12px', textDecoration: 'underline', fontFamily: C.bodyFont }); rm.textContent = 'Remove'; rm.onclick = () => { G[page + '_' + si] = rows.filter(x => x !== r); draw(); }; head.appendChild(rm); }
+            rep.appendChild(head);
+            s.fields.forEach(f => { defined++; if (!visible(f, si, r)) return; shown++; rep.appendChild(field(f, si, r)); });
+            body.appendChild(rep);
+          });
+          const add = mk('button', { background: C.ok, color: '#fff', border: 'none', borderRadius: C.radiusSm + 'px', padding: '11px 22px', fontWeight: 700, display: 'block', margin: '4px auto 16px', fontFamily: C.bodyFont, boxShadow: C.shadowSm });
+          add.textContent = 'Add New'; add.onclick = () => { rows.push(Math.max(...rows) + 1); draw(); toast('Another ' + s.repeat + ' added'); }; body.appendChild(add);
+        } else { s.fields.forEach(f => { defined++; if (!visible(f, si)) return; shown++; body.appendChild(field(f, si)); }); }
+
+        h2.innerHTML = esc(s.title) + '<span style="float:right;font-size:11px;font-weight:400;color:' + C.faint + '">' + shown + ' of ' + defined + ' apply</span>';
+        wrap.append(h2, body); host.appendChild(wrap);
+      });
+      renderAlerts();
+    }
+
+    function alertBox(danger, info) { return mk('div', { border: '1px solid ' + (danger ? '#e5b4ae' : info ? '#bcd9e2' : C.warnLine), background: danger ? C.reqBg : info ? C.pale : C.warnBg,
+      borderLeft: '4px solid ' + (danger ? C.req : info ? C.blue : C.warn), padding: '13px 15px', margin: '13px 15px', fontSize: '14px', borderRadius: '0 ' + C.radiusSm + 'px ' + C.radiusSm + 'px 0', fontFamily: C.bodyFont }); }
+
+    function field(f, si, r) {
+      const k = key(si, f.id, r);
+      if (f.type === 'note') {
+        const d = alertBox(f.danger, f.info);
+        const b = mk('b', { color: f.danger ? C.req : C.dark, display: 'block', marginBottom: '5px', fontFamily: C.headFont }); b.textContent = f.danger ? 'Do not energise' : 'For information';
+        d.appendChild(b); d.appendChild(document.createTextNode(f.text));
+        if (f.reg) { const reg = mk('div', { display: 'inline-block', fontSize: '10.5px', color: C.dark, background: C.grey, borderRadius: '4px', padding: '2px 7px', marginTop: '6px', letterSpacing: '.2px' }); reg.textContent = f.reg; d.appendChild(reg); }
+        return d;
+      }
+      const miss = showMiss && f.req && !filled(k, f);
+      const d = mk('div', { padding: '14px 16px', borderBottom: '1px solid ' + C.paleLine, background: miss ? C.reqBg : 'transparent', boxShadow: miss ? 'inset 3px 0 0 ' + C.req : 'none' });
+      const lab = mk('label', { display: 'block', fontSize: '14px', marginBottom: '8px', color: C.ink, fontFamily: C.bodyFont, fontWeight: 600 });
+      if (f.req) { const star = mk('span', { color: C.req, fontWeight: 700, marginRight: '4px' }); star.textContent = '*'; lab.appendChild(star); }
+      lab.appendChild(document.createTextNode(f.label));
+      if (f.hint) { const h = mk('span', { display: 'block', fontSize: '12px', color: C.faint, marginTop: '3px', fontWeight: 400 }); h.textContent = f.hint; lab.appendChild(h); }
+      if (f.reg) { const reg = mk('div', { display: 'inline-block', fontSize: '10.5px', color: C.dark, background: C.grey, borderRadius: '4px', padding: '2px 7px', marginTop: '5px', letterSpacing: '.2px' }); reg.textContent = f.reg; lab.appendChild(reg); }
+      d.appendChild(lab);
+
+      /* Guards against a typed minus sign and against the spinner going below
+         zero. A bay count of -1 is not a real answer. */
+      const clampPositive = (el, f) => {
+        let v = String(el.value).replace(/[^0-9.]/g, '');
+        if (!f.dec) v = v.split('.')[0];
+        const parts = v.split('.');
+        if (parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
+        if (v !== '' && Number(v) < 0) v = '0';
+        if (el.value !== v) el.value = v;
+        return v;
+      };
+      const inputBase = { width: '100%', padding: '10px 11px', border: '1px solid ' + C.line, borderRadius: '6px', fontSize: '15px', fontFamily: C.bodyFont, background: C.white, color: C.ink };
+      switch (f.type) {
+        case 'text': case 'number': case 'date': case 'time': {
+          const i = mk('input', inputBase); i.type = f.type === 'number' ? 'number' : f.type;
+          if (f.type === 'number') {
+            /* Counts and quantities can never be negative, and are whole numbers
+               unless the field is a length in metres. */
+            i.min = '0';
+            i.step = f.dec ? '0.1' : '1';
+            i.inputMode = f.dec ? 'decimal' : 'numeric';
+          }
+          if (f.type === 'date' && !V[k]) V[k] = new Date().toISOString().slice(0, 10);
+          if (f.type === 'time' && !V[k]) V[k] = new Date().toTimeString().slice(0, 5);
+          i.value = V[k] || ''; i.placeholder = 'enter here';
+          i.oninput = e => { V[k] = f.type === 'number' ? clampPositive(e.target, f) : e.target.value; renderAlerts(); };
+          i.onblur = () => draw(); d.appendChild(i); break;
+        }
+        case 'textarea': { const t = mk('textarea', { ...inputBase, resize: 'vertical' }); t.rows = 3; t.value = V[k] || ''; t.oninput = e => { V[k] = e.target.value; renderAlerts(); }; d.appendChild(t); break; }
+        case 'yesno': case 'ynna': {
+          const opts = f.type === 'ynna' ? ['N/A', 'Yes', 'No'] : ['Yes', 'No'];
+          const g = mk('div', { display: 'flex', gap: '6px', flexWrap: 'wrap' });
+          opts.forEach(o => { const on = V[k] === o; const col = o === 'Yes' ? C.dark : o === 'No' ? C.req : C.dk;
+            const b = mk('button', { border: '1px solid ' + (on ? col : C.line), background: on ? col : C.white, color: on ? '#fff' : C.muted, borderRadius: '6px', padding: '8px 16px', minWidth: '56px', fontWeight: on ? 700 : 400, fontFamily: C.bodyFont });
+            b.textContent = o; b.onclick = () => { V[k] = V[k] === o ? null : o; draw(); }; g.appendChild(b); }); d.appendChild(g); break;
+        }
+        case 'radio': {
+          const g = mk('div', { display: 'grid', gridTemplateColumns: window.innerWidth < 480 ? '1fr' : '1fr 1fr', gap: '7px' });
+          f.options.forEach(o => { const on = V[k] === o;
+            const b = mk('button', { textAlign: 'left', border: (on ? '2px' : '1px') + ' solid ' + (on ? C.dark : C.line), background: on ? C.pale : C.white, borderRadius: '6px', padding: on ? '8px 10px' : '9px 11px', fontSize: '14px', color: on ? C.dark : C.muted, fontWeight: on ? 700 : 400, fontFamily: C.bodyFont });
+            b.textContent = o; b.onclick = () => { V[k] = V[k] === o ? null : o; draw(); }; g.appendChild(b); }); d.appendChild(g); break;
+        }
+        case 'multi': {
+          if (!Array.isArray(V[k])) V[k] = [];
+          const g = mk('div', { display: 'grid', gridTemplateColumns: window.innerWidth < 480 ? '1fr' : '1fr 1fr', gap: '7px' });
+          f.options.forEach(o => { const on = V[k].includes(o);
+            const b = mk('button', { textAlign: 'left', border: (on ? '2px' : '1px') + ' solid ' + (on ? C.dark : C.line), background: on ? C.pale : C.white, borderRadius: '6px', padding: on ? '8px 10px' : '9px 11px', fontSize: '14px', color: on ? C.dark : C.muted, fontWeight: on ? 700 : 400, fontFamily: C.bodyFont });
+            b.textContent = (on ? '✓ ' : '') + o; b.onclick = () => { on ? V[k].splice(V[k].indexOf(o), 1) : V[k].push(o); draw(); }; g.appendChild(b); }); d.appendChild(g); break;
+        }
+        case 'meas': {
+          const w = mk('div', { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' });
+          const lim = V[k + '_lim'];
+          const i = mk('input', { ...inputBase, width: '108px', flex: 'none' }); i.type = 'number'; i.step = '0.01'; i.min = '0'; i.inputMode = 'decimal';
+          i.value = V[k] ?? ''; i.disabled = !!lim;
+          i.oninput = e => { V[k] = clampPositive(e.target, f); renderAlerts(); }; i.onblur = () => draw();
+          const u = mk('span', { fontSize: '13px', color: C.muted, minWidth: '34px' }); u.textContent = f.unit || '';
+          const lb = mk('button', { border: '1px solid ' + (lim ? C.dk : C.line), background: lim ? C.dk : C.white, color: lim ? '#fff' : C.muted, borderRadius: '6px', padding: '7px 12px', fontSize: '12.5px', fontWeight: lim ? 700 : 400, fontFamily: C.bodyFont });
+          lb.textContent = lim || 'Limitation'; lb.onclick = () => { V[k + '_lim'] = lim ? null : 'LIM'; if (V[k + '_lim']) delete V[k]; draw(); };
+          w.append(i, u, lb);
+          const v = verdict(f, k);
+          if (v !== null) { const vs = mk('span', { fontSize: '12px', fontWeight: 700, marginLeft: '2px', color: v === 'LIM' ? C.dk : v ? C.ok : C.req }); vs.textContent = v === 'LIM' ? 'Limitation recorded' : v ? 'Within limit' : 'Outside limit'; w.appendChild(vs); }
+          d.appendChild(w);
+          if (f.min !== undefined || f.max !== undefined) { const h = mk('span', { display: 'block', fontSize: '12px', color: C.faint, marginTop: '6px' }); h.textContent = (f.min !== undefined ? 'Minimum ' + f.min : 'Maximum ' + f.max) + ' ' + f.unit; d.appendChild(h); }
+          break;
+        }
+        case 'geo': {
+          const g = mk('div', { display: 'flex' });
+          const b = mk('button', { border: '1px solid ' + (V[k] ? C.dark : C.line), background: V[k] ? C.dark : C.white, color: V[k] ? '#fff' : C.muted, borderRadius: '6px', padding: '8px 16px', fontFamily: C.bodyFont, fontWeight: V[k] ? 700 : 400 });
+          b.textContent = V[k] || 'Capture location';
+          b.onclick = () => { b.textContent = 'Locating'; if (!navigator.geolocation) { V[k] = 'unavailable on this device'; draw(); return; }
+            navigator.geolocation.getCurrentPosition(p => { V[k] = p.coords.latitude.toFixed(5) + ', ' + p.coords.longitude.toFixed(5); draw(); }, () => { V[k] = 'permission denied'; draw(); }, { timeout: 8000 }); };
+          g.appendChild(b); d.appendChild(g); break;
+        }
+        case 'photo': case 'multiphoto': {
+          const many = f.type === 'multiphoto'; if (!Array.isArray(V[k])) V[k] = [];
+          const cams = mk('div', { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'flex-start' });
+          V[k].forEach((p, i) => { const th = mk('div', { position: 'relative', width: '80px', height: '80px' });
+            const img = mk('img', { width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px', border: '1px solid ' + C.line, display: 'block' }); img.src = p.url; img.alt = f.label;
+            const x = mk('button', { position: 'absolute', top: '-6px', right: '-6px', width: '22px', height: '22px', borderRadius: '50%', background: C.req, color: '#fff', border: '2px solid #fff', fontSize: '13px', lineHeight: 1, padding: 0 }); x.textContent = '×'; x.title = 'Remove'; x.onclick = () => { V[k].splice(i, 1); draw(); };
+            th.append(img, x); cams.appendChild(th); });
+          if (many || V[k].length === 0) { const add = mk('button', { border: '1px dashed ' + C.line, background: '#fbfcfc', borderRadius: C.radiusSm + 'px', width: '80px', height: '80px', color: C.blue, fontSize: '11px', lineHeight: 1.3, padding: '6px', fontFamily: C.bodyFont });
+            add.innerHTML = '+<br>' + (many ? 'Add photos' : 'Add photo'); add.onmouseenter = () => S(add, { borderColor: C.blue, background: C.pale }); add.onmouseleave = () => S(add, { borderColor: C.line, background: '#fbfcfc' }); add.onclick = () => grab(k, many); cams.appendChild(add); }
+          d.appendChild(cams);
+          if (V[k].length) { const kb = mk('div', { fontSize: '11px', color: C.faint, marginTop: '6px' }); const a = V[k].reduce((t, p) => t + p.after, 0), b = V[k].reduce((t, p) => t + p.before, 0); kb.textContent = V[k].length + ' image(s), ' + a + ' KB to upload, down from ' + b + ' KB'; d.appendChild(kb); }
+          break;
+        }
+        case 'sig': {
+          const w = mk('div', { border: '1px solid ' + C.line, borderRadius: C.radiusSm + 'px', background: '#fdfdfd' });
+          const c = mk('canvas', { display: 'block', width: '100%', height: '128px', touchAction: 'none', borderRadius: C.radiusSm + 'px' });
+          const bar = mk('div', { display: 'flex', gap: '8px', padding: '8px 10px', borderTop: '1px solid ' + C.line, fontSize: '12px', color: C.faint, alignItems: 'center', fontFamily: C.bodyFont });
+          const lbl = mk('span'); lbl.textContent = V[k] ? 'Signed' : 'Sign above with finger or stylus';
+          const clr = mk('button', { marginLeft: 'auto', background: 'none', border: '1px solid ' + C.line, borderRadius: '5px', padding: '4px 11px', color: C.dark, fontSize: '12px', fontFamily: C.bodyFont }); clr.textContent = 'Clear'; clr.onclick = () => { V[k] = null; draw(); };
+          bar.append(lbl, clr); w.append(c, bar); d.appendChild(w); requestAnimationFrame(() => initSig(c, k)); break;
+        }
+        case 'charger': {
+          const mkk = k, modk = k + '_model', vark = k + '_variant';
+          const s1 = mk('select', inputBase); s1.innerHTML = '<option value="">Select manufacturer</option>' + Object.keys(RANGE).map(m => '<option' + (V[mkk] === m ? ' selected' : '') + '>' + m + '</option>').join('');
+          s1.onchange = e => { V[mkk] = e.target.value; delete V[modk]; delete V[vark]; draw(); }; d.appendChild(s1);
+          if (V[mkk]) {
+            const models = RANGE[V[mkk]].models;
+            const l2 = mk('label', { display: 'block', margin: '12px 0 7px', fontSize: '14px', fontWeight: 600, fontFamily: C.bodyFont }); l2.innerHTML = '<span style="color:' + C.req + ';font-weight:700;margin-right:4px">*</span>Model'; d.appendChild(l2);
+            const g = mk('div', { display: 'grid', gridTemplateColumns: window.innerWidth < 480 ? '1fr' : '1fr 1fr', gap: '7px' });
+            models.forEach(m => { const on = V[modk] === m.name;
+              const b = mk('button', { textAlign: 'left', border: (on ? '2px' : '1px') + ' solid ' + (on ? C.dark : C.line), background: on ? C.pale : C.white, borderRadius: '6px', padding: on ? '8px 10px' : '9px 11px', fontSize: '14px', color: on ? C.dark : C.muted, fontWeight: on ? 700 : 400, fontFamily: C.bodyFont });
+              b.innerHTML = esc(m.name) + '<span style="display:block;font-size:12px;color:' + C.faint + ';font-weight:400;margin-top:2px">' + m.type + (m.kw ? ', ' + m.kw + ' kW' : '') + (m.desc ? '. ' + esc(m.desc) : '') + '</span>';
+              b.onclick = () => { V[modk] = V[modk] === m.name ? null : m.name; delete V[vark]; draw(); }; g.appendChild(b); }); d.appendChild(g);
+            const vr = RANGE[V[mkk]].variant;
+            if (V[modk] && vr && vr.when(V[modk])) {
+              const l3 = mk('label', { display: 'block', margin: '14px 0 7px', fontSize: '14px', fontWeight: 600, fontFamily: C.bodyFont }); l3.innerHTML = '<span style="color:' + C.req + ';font-weight:700;margin-right:4px">*</span>' + esc(vr.label); d.appendChild(l3);
+              const g3 = mk('div', { display: 'grid', gridTemplateColumns: window.innerWidth < 480 ? '1fr' : '1fr 1fr', gap: '7px' });
+              vr.options.forEach(o => { const on = V[vark] === o;
+                const b = mk('button', { textAlign: 'left', border: (on ? '2px' : '1px') + ' solid ' + (on ? C.dark : C.line), background: on ? C.pale : C.white, borderRadius: '6px', padding: on ? '8px 10px' : '9px 11px', fontSize: '14px', color: on ? C.dark : C.muted, fontWeight: on ? 700 : 400, fontFamily: C.bodyFont });
+                b.textContent = o; b.onclick = () => { V[vark] = V[vark] === o ? null : o; draw(); }; g3.appendChild(b); }); d.appendChild(g3);
+            }
+          }
+          break;
+        }
+      }
+      return d;
+    }
+
+    function verdict(f, k) { if (V[k + '_lim']) return 'LIM'; const v = V[k]; if (v === undefined || v === null || v === '') return null; const n = parseFloat(v); if (isNaN(n)) return null;
+      if (f.min !== undefined) return n >= f.min; if (f.max !== undefined) return n <= f.max; return null; }
+
+    function initSig(c, k) {
+      const dpr = window.devicePixelRatio || 1, w = c.clientWidth || 300, h = 128; c.width = w * dpr; c.height = h * dpr;
+      const x = c.getContext('2d'); x.scale(dpr, dpr); x.lineWidth = 2; x.lineCap = 'round'; x.strokeStyle = C.dark;
+      if (V[k]) { const i = new Image(); i.onload = () => x.drawImage(i, 0, 0, w, h); i.src = V[k]; }
+      let drawing = false; const pt = e => { const r = c.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+      c.onpointerdown = e => { drawing = true; c.setPointerCapture(e.pointerId); const [a, b] = pt(e); x.beginPath(); x.moveTo(a, b); };
+      c.onpointermove = e => { if (!drawing) return; const [a, b] = pt(e); x.lineTo(a, b); x.stroke(); };
+      c.onpointerup = () => { if (!drawing) return; drawing = false; V[k] = c.toDataURL('image/png'); renderAlerts(); };
+    }
+
+    function grab(k, many) {
+      const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment'; inp.multiple = !!many;
+      inp.onchange = () => { const files = [...inp.files]; let done = 0;
+        files.forEach(f => { const before = Math.round(f.size / 1024); const img = new Image();
+          img.onload = () => { const max = 1600, sc = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement('canvas'); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); const url = c.toDataURL('image/jpeg', 0.8); V[k].push({ name: f.name, url, before, after: Math.round(url.length * 0.75 / 1024) });
+            if (++done === files.length) { draw(); if (!online) { queue++; net(); } } }; img.src = URL.createObjectURL(f); }); };
+      inp.click();
+    }
+
+    function filled(k, f) { if (f.type === 'note') return true; const v = V[k];
+      if (f.type === 'photo' || f.type === 'multiphoto' || f.type === 'multi') return Array.isArray(v) && v.length > 0;
+      if (f.type === 'meas') return V[k + '_lim'] || (v !== undefined && v !== null && String(v).trim() !== '');
+      if (f.type === 'charger') { if (!v || !V[k + '_model']) return false; const vr = RANGE[v].variant; if (vr && vr.when(V[k + '_model']) && !V[k + '_variant']) return false; return true; }
+      return v !== undefined && v !== null && String(v).trim() !== ''; }
+
+    function missing() { const out = []; walk((f, si, r, pi) => { if (f.type === 'note' || !f.req) return; if (!visible(f, si, r)) return; if (!filled(key(si, f.id, r), f)) out.push({ label: f.label, page: pi, rep: r }); }); return out; }
+
+    function gates() { const out = []; walk((f, si, r) => { if (!visible(f, si, r)) return; const k = key(si, f.id, r);
+      if (f.gate && V[k] === f.gate) {
+        if (f.id === 'safeToOperate') out.push('A charge point is recorded as unsafe to remain in operation. Isolate the supply.');
+        else if (f.id === 'simultaneous') out.push('Simultaneous contact with a different earthing system is possible. This must be resolved before the unit is left in service.');
+        else if (f.id === 'penMethod' || f.id === 'penFitted') out.push('PME supply with an outdoor vehicle space and no compliant open PEN fault protection. Isolate the supply.');
+        else if (f.id === 'penTest') out.push('PEN fault protection has not been proven by test. Do not leave in service.');
+        else if (f.id === 'rcdTypeB') out.push('No integral DC detection is declared and a Type B RCD is not fitted. Isolate the supply.');
+        else if (f.id === 'rcdCorrect') out.push('The RCD type is not correct for this equipment. Isolate the supply.');
+        else if (f.id === 'cableCondition' || f.id === 'shutters') out.push('Damaged connector or socket recorded. Take the unit out of service.');
+        else out.push(f.label);
+      }
+      if (f.type === 'meas' && verdict(f, k) === false) out.push(f.label + ' is outside the limit of ' + (f.min !== undefined ? 'minimum ' + f.min : 'maximum ' + f.max) + ' ' + (f.unit || ''));
+    }); return [...new Set(out)]; }
+
+    function renderAlerts() {
+      const g = gates(), m = showMiss ? missing() : []; const host = elBy('alerts'); host.innerHTML = '';
+      if (g.length) { const box = alertBox(true, false); const b = mk('b', { color: C.req, display: 'block', marginBottom: '5px', fontFamily: C.headFont }); b.textContent = 'Action required on site';
+        const ul = mk('ul', { margin: '6px 0 0', paddingLeft: '20px', color: C.muted, fontSize: '13px' }); g.forEach(x => { const li = document.createElement('li'); li.textContent = x; ul.appendChild(li); }); box.append(b, ul); host.appendChild(box); }
+      if (m.length) { const box = alertBox(false, false); const b = mk('b', { color: C.dark, display: 'block', marginBottom: '5px', fontFamily: C.headFont }); b.textContent = m.length + ' required question(s) outstanding';
+        const ul = mk('ul', { margin: '6px 0 0', paddingLeft: '20px', color: C.muted, fontSize: '13px' }); m.slice(0, 8).forEach(x => { const li = document.createElement('li'); li.textContent = x.label; ul.appendChild(li); });
+        if (m.length > 8) { const li = document.createElement('li'); li.textContent = 'and ' + (m.length - 8) + ' more'; ul.appendChild(li); } box.append(b, ul); host.appendChild(box); }
+    }
+
+    function submit() {
+      showMiss = true; const m = missing();
+      if (m.length) { page = m[0].page; seen.add(page); draw(); window.scrollTo(0, 0); toast(m.length + ' required question(s) outstanding'); return; }
+      draw();
+      const rows = []; let photos = 0, hidden = 0;
+      walk((f, si, r) => { if (f.type === 'note') return; if (!visible(f, si, r)) { hidden++; return; } const k = key(si, f.id, r), v = V[k], tag = r !== undefined ? ' [' + (r + 1) + ']' : '';
+        if (f.type === 'photo' || f.type === 'multiphoto') { photos += (v || []).length; return; }
+        if (f.type === 'sig') { if (v) rows.push([f.label + tag, 'signed']); return; }
+        if (f.type === 'charger') { if (v) rows.push(['Charge point' + tag, v + ' ' + (V[k + '_model'] || '') + (V[k + '_variant'] ? ', ' + V[k + '_variant'] : '')]); return; }
+        if (f.type === 'meas') { if (V[k + '_lim']) rows.push([f.label + tag, 'LIM']); else if (v !== undefined && v !== '') rows.push([f.label + tag, v + ' ' + (f.unit || '')]); return; }
+        if (f.type === 'multi') { if ((v || []).length) rows.push([f.label + tag, v.join(', ')]); return; }
+        if (v !== undefined && v !== null && String(v).trim() !== '') rows.push([f.label + tag, String(v)]); });
+      const ref = 'AJSE-' + form.ref + '-' + String(Math.floor(1 + Math.random() * 9999)).padStart(4, '0');
+      const payload = { reference: ref, form: form.id, submitted_at: new Date().toISOString(), submitted_offline: !online, answered: rows.length, not_applicable: hidden, photo_count: photos, values: Object.fromEntries(rows.slice(0, 10)) };
+
+      elBy('runner').style.display = 'none'; elBy('result').style.display = 'block';
+      const out = mk('div', { background: C.white, border: '1px solid ' + C.line, borderRadius: C.radius + 'px', padding: '22px', boxShadow: C.shadowSm });
+      const h2 = mk('h2', { margin: '0 0 4px', fontSize: '18px', color: C.dark, fontFamily: C.headFont, fontWeight: 700 }); h2.textContent = form.title + ' submitted';
+      const sub = mk('div', { color: C.muted, margin: '0 0 4px', fontSize: '14px' }); sub.textContent = 'Reference ' + ref + '. ' + rows.length + ' answers, ' + hidden + ' questions did not apply, ' + photos + ' photos' + (online ? '' : ', queued on device') + '.';
+      const dl = mk('dl', { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '6px 16px', margin: '14px 0 0', fontSize: '13px' });
+      rows.slice(0, 14).forEach(([a, b]) => { const dt = mk('dt', { color: C.dark, fontWeight: 700 }); dt.textContent = a; const dd = mk('dd', { margin: 0 }); dd.textContent = b.length > 70 ? b.slice(0, 70) + '…' : b; dl.append(dt, dd); });
+      out.append(h2, sub, dl);
+      if (rows.length > 14) { const more = mk('div', { fontSize: '11px', color: C.faint, marginTop: '8px' }); more.textContent = 'and ' + (rows.length - 14) + ' more answers'; out.appendChild(more); }
+      const pre = mk('pre', { background: '#f7f9fa', border: '1px solid ' + C.line, borderRadius: '5px', padding: '12px', fontSize: '11px', overflow: 'auto', maxHeight: '240px', marginTop: '14px' }); pre.textContent = JSON.stringify(payload, null, 2); out.appendChild(pre);
+      elBy('result').innerHTML = ''; elBy('result').appendChild(out);
+      if (!online) { queue++; net(); } window.scrollTo(0, 0);
+    }
+
+    // ---- shell markup ----
+    root.innerHTML = `
+      <div id="topbar" style="background:${C.dark};color:#fff;padding:11px 18px;display:flex;align-items:center;gap:14px">
+        <span id="mark" style="background:#fff;border-radius:6px;padding:6px 8px;display:inline-flex;box-shadow:0 1px 3px rgba(0,0,0,.18);flex:none">
+          <span style="height:32px;display:inline-flex"><svg viewBox="0 0 180 168" role="img" aria-label="AJS Energy" xmlns="http://www.w3.org/2000/svg" style="height:100%;width:auto;display:block"><title>AJS Energy</title><rect x="0" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="62" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="124" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="0" y="130" width="180" height="38" fill="#00859F"></rect><path d="M4,88 L23,36 L33,36 L52,88 L41.5,88 L38.6,72 L17.4,72 L14.5,88 Z M28,45 L22,63 L34,63 Z" fill="#ffffff" fill-rule="evenodd"></path><path d="M108,36 L108,70 C108,80.5 100,88 89,88 C79,88 72,82 70,73 L80.5,70 C82,76 85,79 89,79 C94,79 96.5,75.5 96.5,70 L96.5,36 Z" fill="#ffffff"></path><path d="M165,43.5 L165,49 A13,13 0 1 0 152,62 A13,13 0 1 1 139,75 L139,80.5" fill="none" stroke="#ffffff" stroke-width="11.5"></path><text x="90" y="156" font-family="Archivo, Arial, Helvetica, sans-serif" font-weight="700" font-size="23" letter-spacing="4.2" text-anchor="middle" fill="#ffffff">ENERGY</text></svg></span>
+        </span>
+        <div style="font-size:13px;color:#cfe5ec;line-height:1.3;font-family:${C.bodyFont};font-weight:600">EV charging design, installation and maintenance</div>
+        <a href="jobs.html" style="margin-left:auto;color:#a8d4de;font-size:13px;font-weight:600;text-decoration:none;font-family:${C.bodyFont}">&larr; Jobs</a>
+        <div style="font-size:12px;color:#a8d4de;text-align:right;line-height:1.4;font-family:${C.bodyFont}">D. Whitmore<br>Engineer · ECS 4471902</div>
+      </div>
+      <div style="height:3px;background:linear-gradient(90deg,${C.blue},${C.dark})"></div>
+      <div id="netbar" style="background:#fff;border-bottom:1px solid ${C.line};padding:8px 18px;display:flex;gap:10px;align-items:center;font-size:13px;flex-wrap:wrap;font-family:${C.bodyFont}">
+        <span id="dot" style="width:9px;height:9px;border-radius:50%;background:${C.ok}"></span><span id="netxt">Online</span>
+        <span id="pill" style="display:none;background:${C.warnBg};border:1px solid ${C.warnLine};border-radius:5px;padding:2px 10px;color:${C.warn};font-size:12px"></span>
+        <span style="margin-left:auto"></span>
+        <button id="netbtn" style="background:none;border:1px solid ${C.line};border-radius:5px;padding:5px 11px;color:${C.ink};font-family:${C.bodyFont}">Go offline</button>
+        <button id="syncbtn" style="display:none;background:none;border:1px solid ${C.line};border-radius:5px;padding:5px 11px;color:${C.ink};font-family:${C.bodyFont}">Sync now</button>
+      </div>
+      <main style="max-width:820px;margin:0 auto;padding:22px 18px">
+        <div id="home">
+          <h1 style="font-size:22px;color:${C.dark};margin:0 0 6px;font-family:${C.headFont};font-weight:700">Forms</h1>
+          <p style="color:${C.muted};margin:0 0 20px;font-size:14px;font-family:${C.bodyFont}">Questions appear only where they apply to what is actually installed. Everything saves on the device first, so signal is not required.</p>
+          <div id="picker"></div>
+        </div>
+        <div id="runner" style="display:none">
+          <h1 id="ftitle" style="font-size:21px;color:${C.dark};margin:0 0 5px;font-family:${C.headFont};font-weight:700"></h1>
+          <p id="fsub" style="color:${C.muted};margin:0 0 16px;font-size:14px;font-family:${C.bodyFont}"></p>
+          <div id="rail" style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap"></div>
+          <div id="alerts"></div>
+          <div id="page"></div>
+        </div>
+        <div id="result" style="display:none"></div>
+      </main>
+      <footer style="border-top:3px solid ${C.blue};background:#fff;padding:20px 18px 88px">
+        <div style="max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <span style="height:44px;display:inline-flex"><svg viewBox="0 0 180 168" role="img" aria-label="AJS Energy" xmlns="http://www.w3.org/2000/svg" style="height:100%;width:auto;display:block"><title>AJS Energy</title><rect x="0" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="62" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="124" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="0" y="130" width="180" height="38" fill="#00859F"></rect><path d="M4,88 L23,36 L33,36 L52,88 L41.5,88 L38.6,72 L17.4,72 L14.5,88 Z M28,45 L22,63 L34,63 Z" fill="#ffffff" fill-rule="evenodd"></path><path d="M108,36 L108,70 C108,80.5 100,88 89,88 C79,88 72,82 70,73 L80.5,70 C82,76 85,79 89,79 C94,79 96.5,75.5 96.5,70 L96.5,36 Z" fill="#ffffff"></path><path d="M165,43.5 L165,49 A13,13 0 1 0 152,62 A13,13 0 1 1 139,75 L139,80.5" fill="none" stroke="#ffffff" stroke-width="11.5"></path><text x="90" y="156" font-family="Archivo, Arial, Helvetica, sans-serif" font-weight="700" font-size="23" letter-spacing="4.2" text-anchor="middle" fill="#ffffff">ENERGY</text></svg></span>
+          <div style="font-size:13px;color:${C.muted};line-height:1.5;font-family:${C.bodyFont}"><b style="color:${C.dark}">AJS Energy</b><br>Innovation House, 6 Cibus Way, Holbeach, PE12 7FH</div>
+          <a href="https://ajsenergy.uk" style="margin-left:auto;color:${C.blue};font-size:13px;font-weight:700;text-decoration:none;font-family:${C.bodyFont}">ajsenergy.uk</a>
+        </div>
+      </footer>
+      <div id="navbar" style="display:none;position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid ${C.line};padding:11px 16px;gap:10px;align-items:center;box-shadow:0 -3px 12px rgba(5,40,55,.08)">
+        <button id="quit" style="background:none;border:1px solid ${C.line};border-radius:6px;padding:9px 15px;color:${C.dark};font-family:${C.bodyFont}">Menu</button>
+        <div style="margin:0 auto;display:flex;gap:8px">
+          <button id="prev" style="background:none;border:1px solid ${C.line};border-radius:6px;padding:9px 15px;color:${C.dark};font-family:${C.bodyFont}">Prev</button>
+          <button id="next" style="background:none;border:1px solid ${C.line};border-radius:6px;padding:9px 15px;color:${C.dark};font-family:${C.bodyFont}">Next</button>
+        </div>
+        <button id="submit" style="background:${C.blue};color:#fff;border:none;font-weight:700;padding:11px 24px;border-radius:6px;font-family:${C.bodyFont}">Submit</button>
+      </div>`;
+
+    elBy('netbtn').onclick = () => { online = !online; net(); };
+    elBy('syncbtn').onclick = () => { const n = queue; queue = 0; net(); toast(n + ' record(s) synced'); };
+    elBy('quit').onclick = () => { elBy('runner').style.display = 'none'; elBy('result').style.display = 'none'; elBy('navbar').style.display = 'none'; elBy('home').style.display = 'block'; window.scrollTo(0, 0); };
+    elBy('prev').onclick = () => { if (page > 0) { page--; seen.add(page); draw(); window.scrollTo(0, 0); } };
+    elBy('next').onclick = () => { if (page < form.pages.length - 1) { page++; seen.add(page); draw(); window.scrollTo(0, 0); } };
+    elBy('submit').onclick = () => submit();
+
+    renderPicker(); net();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,832 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AJS Energy EV charging enquiry</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20180%20168%22%20role%3D%22img%22%20aria-label%3D%22AJS%20Energy%22%3E%20%3Ctitle%3EAJS%20Energy%3C%2Ftitle%3E%20%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%2256%22%20height%3D%22124%22%20fill%3D%22%23005F8C%22%3E%3C%2Frect%3E%3Crect%20x%3D%2262%22%20y%3D%220%22%20width%3D%2256%22%20height%3D%22124%22%20fill%3D%22%23005F8C%22%3E%3C%2Frect%3E%3Crect%20x%3D%22124%22%20y%3D%220%22%20width%3D%2256%22%20height%3D%22124%22%20fill%3D%22%23005F8C%22%3E%3C%2Frect%3E%3Crect%20x%3D%220%22%20y%3D%22130%22%20width%3D%22180%22%20height%3D%2238%22%20fill%3D%22%2300859F%22%3E%3C%2Frect%3E%3Cpath%20d%3D%22M4%2C88%20L23%2C36%20L33%2C36%20L52%2C88%20L41.5%2C88%20L38.6%2C72%20L17.4%2C72%20L14.5%2C88%20Z%20M28%2C45%20L22%2C63%20L34%2C63%20Z%22%20fill%3D%22%23ffffff%22%20fill-rule%3D%22evenodd%22%3E%3C%2Fpath%3E%3Cpath%20d%3D%22M108%2C36%20L108%2C70%20C108%2C80.5%20100%2C88%2089%2C88%20C79%2C88%2072%2C82%2070%2C73%20L80.5%2C70%20C82%2C76%2085%2C79%2089%2C79%20C94%2C79%2096.5%2C75.5%2096.5%2C70%20L96.5%2C36%20Z%22%20fill%3D%22%23ffffff%22%3E%3C%2Fpath%3E%3Cpath%20d%3D%22M165%2C43.5%20L165%2C49%20A13%2C13%200%201%200%20152%2C62%20A13%2C13%200%201%201%20139%2C75%20L139%2C80.5%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%2211.5%22%3E%3C%2Fpath%3E%20%3Ctext%20x%3D%2290%22%20y%3D%22156%22%20font-family%3D%22Archivo%2C%20Arial%2C%20Helvetica%2C%20sans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2223%22%20letter-spacing%3D%224.2%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%3EENERGY%3C%2Ftext%3E%3C%2Fsvg%3E">
+<style>
+  :root{--blue:#1886a1;--dark:#05618e;--grey:#f2f6f7;--ink:#182a32;--line:#dde5e8;
+        --white:#fff;--pale:#eaf5f7;--warn:#8a5a00;--warnbg:#fdf6e8;--gold:#b8860b;
+        --no:#c1291f;--dk:#5c6d74}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Arial,Helvetica,sans-serif;color:var(--ink);background:var(--grey);
+       font-size:15px;line-height:1.55}
+  h1,h2,h3,.step>header b,.rec h3,.panel h3,.summary h2{font-family:Arial,Helvetica,sans-serif;}
+  button{font-family:inherit;font-size:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+  .topbar{background:var(--dark);color:var(--white);padding:14px 20px;display:flex;
+          align-items:center;gap:16px;flex-wrap:wrap}
+  .brand{display:inline-flex;align-items:center;text-decoration:none;flex:none}
+  .mark{background:var(--white);border-radius:6px;padding:7px 9px;display:inline-flex;
+        box-shadow:0 1px 3px rgba(0,0,0,.18)}
+  .mark svg{height:44px;width:auto;display:block}
+  .strap{color:#a8d4de;font-size:13px;line-height:1.35}
+  @media(max-width:520px){.mark svg{height:36px}.strap{display:none}}
+  .accent{height:3px;background:var(--blue)}
+
+  /* hero, funding led */
+  .hero{background:linear-gradient(135deg,var(--dark),#023349);color:var(--white);padding:32px 20px 34px}
+  .hero .in{max-width:900px;margin:0 auto}
+  .hero h1{font-size:26px;margin:0 0 8px;color:var(--white)}
+  .hero p{margin:0 0 20px;color:#cfe5ec;font-size:15px;max-width:640px}
+  .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+  .three div{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);
+             border-radius:5px;padding:13px 15px}
+  .three b{display:block;color:var(--white);font-size:14px;margin-bottom:3px}
+  .three small{color:#a8d4de;font-size:12.5px;line-height:1.45;display:block}
+
+  main{max-width:900px;margin:0 auto;padding:24px 20px 60px}
+  .chipbar{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:13px 15px;
+           margin-bottom:20px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:52px;box-shadow:0 2px 10px rgba(5,40,55,.06)}
+  .chipbar .lead{font-size:13px;color:#5d6c72;font-weight:bold}
+  .chip{background:var(--dark);color:var(--white);border:none;border-radius:14px;
+        padding:5px 10px 5px 12px;font-size:13px;display:inline-flex;gap:7px;align-items:center}
+  .chip:hover{background:#04507a}
+  .chip em{font-style:normal;opacity:.6}
+
+  .step{background:var(--white);border:1px solid var(--line);border-radius:12px;margin-bottom:18px;box-shadow:0 3px 12px rgba(5,40,55,.07)}
+  .step > header{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;
+                 align-items:baseline;flex-wrap:wrap}
+  .step > header b{color:var(--dark)}
+  .step > header .n{background:var(--blue);color:var(--white);border-radius:3px;font-size:12px;
+                    padding:2px 7px;font-weight:bold}
+  .step .inner{padding:16px}
+  .qlabel{display:block;font-size:14px;font-weight:bold;color:var(--dark);margin:0 0 8px}
+  .qlabel + .opts,.qlabel + .row3{margin-bottom:20px}
+  .qhint{display:block;font-weight:normal;color:#8a959a;font-size:12px;margin-top:2px}
+
+  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}
+  .opt{background:var(--white);border:1px solid var(--line);border-radius:5px;padding:11px 13px;
+       text-align:left}
+  .opt:hover{border-color:var(--blue);background:var(--pale)}
+  .opt.picked{border:2px solid var(--dark);background:var(--pale);padding:10px 12px}
+  .opt strong{display:block;color:var(--dark);font-size:14px}
+  .opt small{color:#6b7a80;font-size:12px;display:block;margin-top:1px}
+
+  .row3{display:flex;gap:8px;flex-wrap:wrap}
+  .row3 button{border:1px solid var(--line);background:var(--white);border-radius:5px;
+               padding:9px 18px;color:#5d6c72}
+  .row3 button.picked{color:var(--white);font-weight:bold}
+  .row3 button.yes.picked{background:var(--dark);border-color:var(--dark)}
+  .row3 button.no.picked{background:var(--no);border-color:var(--no)}
+  .row3 button.dk.picked{background:var(--dk);border-color:var(--dk)}
+  .row3 button.yes:hover{border-color:var(--dark)}
+  .row3 button.no:hover{border-color:var(--no)}
+  .row3 button.dk:hover{border-color:var(--dk)}
+
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:13px;font-weight:bold;color:var(--dark);margin-bottom:4px}
+  .field input,.field textarea,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);
+       border-radius:4px;font-size:15px;font-family:inherit}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+  .btn{background:var(--blue);color:var(--white);border:none;border-radius:8px;padding:13px 26px;
+       font-weight:bold;font-size:16px;box-shadow:0 2px 10px rgba(5,40,55,.1)}
+  .btn:hover{background:#146f86}
+  .btn.ghost{background:none;color:var(--dark);border:1px solid var(--line);font-weight:normal;
+             font-size:15px;padding:11px 20px}
+
+  .panel{border:1px solid var(--line);border-left:4px solid var(--blue);background:var(--pale);
+         padding:15px 17px;margin-bottom:14px}
+  .panel.gold{border-left-color:var(--gold);background:#fdfaf1}
+  .panel.shut{border-left-color:var(--warn);background:var(--warnbg)}
+  .panel h3{margin:0 0 5px;font-size:14px;color:var(--dark)}
+  .panel .figure{font-size:20px;font-weight:bold;color:var(--dark);margin-bottom:4px}
+  .panel p{margin:5px 0 0;font-size:13px;color:#5d6c72}
+  .panel .tiny{font-size:11.5px;color:#8a959a;margin-top:8px}
+
+  .rec{border:1px solid var(--blue);background:var(--white);border-radius:6px;padding:16px 18px;
+       margin-bottom:14px}
+  .rec h3{margin:0 0 6px;font-size:14px;color:var(--dark)}
+  .rec .big{font-size:18px;font-weight:bold;color:var(--dark)}
+  .rec p{margin:6px 0 0;font-size:13px;color:#5d6c72}
+
+  .shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
+  .shot{border:1px dashed var(--line);border-radius:5px;padding:10px;text-align:center;background:#fbfcfc}
+  .shot.has{border-style:solid;border-color:var(--blue);background:var(--white)}
+  .shot .cap{font-size:12px;color:var(--dark);font-weight:bold;display:block;margin-bottom:5px}
+  .shot .why{font-size:11px;color:#8a959a;display:block;line-height:1.35}
+  .shot img{width:100%;height:80px;object-fit:cover;border-radius:3px;display:block}
+  .shot .vok{height:80px;display:flex;align-items:center;justify-content:center;background:var(--pale);
+             border-radius:3px;color:var(--dark);font-size:12px;font-weight:bold}
+  .shot .pick{background:none;border:1px solid var(--line);border-radius:3px;padding:5px 8px;
+              font-size:12px;color:var(--dark);margin-top:7px;width:100%}
+  .shot .drop{background:none;border:none;color:#b3261e;font-size:11px;text-decoration:underline;margin-top:4px}
+
+  .summary{background:var(--pale);border:1px solid var(--blue);border-radius:6px;padding:18px}
+  .summary h2{margin:0 0 12px;font-size:18px;color:var(--dark)}
+  .summary dl{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:0;font-size:14px}
+  .summary dt{color:var(--dark);font-weight:bold}
+  .summary dd{margin:0}
+  .note{font-size:12px;color:#6b7a80;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+  .subq{border-left:3px solid var(--dark);background:var(--pale);padding:12px 14px;
+        margin:2px 0 4px}
+  .req{color:#b3261e;font-weight:bold;margin-right:3px}
+  .field.bad input{border-color:#b3261e;background:#fdf4f3}
+  .field.bad label{color:#b3261e}
+  .formerr{background:#fdf4f3;border:1px solid #e5b4ae;border-left:4px solid #b3261e;
+           padding:11px 14px;margin-bottom:14px;font-size:13.5px;color:#7d1c15}
+  footer{border-top:3px solid var(--blue);background:var(--white);padding:20px}
+  .fin{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .fmark svg{height:52px;width:auto;display:block}
+  .faddr{font-size:13px;color:#5d6c72;line-height:1.5}
+  .faddr b{color:var(--dark)}
+  .fsite{margin-left:auto;color:var(--blue);font-size:13px;font-weight:bold;text-decoration:none}
+  .fsite:hover{text-decoration:underline}
+  @media(max-width:520px){.fsite{margin-left:0;flex-basis:100%}}
+  .hidden{display:none}
+</style>
+
+<div class="topbar">
+  <a class="brand" href="https://ajsenergy.uk" aria-label="AJS Energy home">
+    <span class="mark"><svg viewBox="0 0 180 168" role="img" aria-label="AJS Energy"> <title>AJS Energy</title> <rect x="0" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="62" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="124" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="0" y="130" width="180" height="38" fill="#00859F"></rect><path d="M4,88 L23,36 L33,36 L52,88 L41.5,88 L38.6,72 L17.4,72 L14.5,88 Z M28,45 L22,63 L34,63 Z" fill="#ffffff" fill-rule="evenodd"></path><path d="M108,36 L108,70 C108,80.5 100,88 89,88 C79,88 72,82 70,73 L80.5,70 C82,76 85,79 89,79 C94,79 96.5,75.5 96.5,70 L96.5,36 Z" fill="#ffffff"></path><path d="M165,43.5 L165,49 A13,13 0 1 0 152,62 A13,13 0 1 1 139,75 L139,80.5" fill="none" stroke="#ffffff" stroke-width="11.5"></path> <text x="90" y="156" font-family="Archivo, Arial, Helvetica, sans-serif" font-weight="700" font-size="23" letter-spacing="4.2" text-anchor="middle" fill="#ffffff">ENERGY</text></svg></span>
+  </a>
+  <span class="strap">EV charging design, installation and maintenance</span>
+  <a href="jobs.html" style="margin-left:auto;color:#a8d4de;font-size:13px;font-weight:600;text-decoration:none">&larr; Jobs</a>
+</div>
+<div class="accent"></div>
+
+<div class="hero"><div class="in">
+  <h1>EV charging for your site, staff or fleet</h1>
+  <p>Tell us a bit about your site. No technical knowledge needed. We'll work out what suits it,
+     what funding you can get, and arrange a free site survey.</p>
+  <div class="three">
+    <div><b>Own them outright</b><small>Buy the chargers yourself and keep all the revenue.
+      We'll talk you through which route makes most sense.</small></div>
+    <div><b>Partially funded schemes</b><small>Government grants cover up to 75% of the cost on
+      most business, education and fleet sites. We handle the paperwork.</small></div>
+    <div><b>Fully funded schemes</b><small>Our funding partners can install, own and maintain
+      the chargers at no upfront cost to you, in return for a long-term agreement.</small></div>
+  </div>
+</div></div>
+
+<main>
+  <div class="chipbar">
+    <span class="lead">Your answers</span>
+    <span id="chips"></span>
+    <span id="none" style="font-size:13px;color:#8a959a">nothing selected yet</span>
+  </div>
+
+  <!-- 1 -->
+  <div class="step">
+    <header><span class="n">1</span><b>What can we help with?</b></header>
+    <div class="inner"><div class="opts" id="s-kind"></div></div>
+  </div>
+
+  <!-- 2 -->
+  <div class="step hidden" id="step2">
+    <header><span class="n">2</span><b>What type of site?</b></header>
+    <div class="inner"><div class="opts" id="s-site"></div></div>
+  </div>
+
+  <!-- 3 install -->
+  <div class="step hidden" id="step3i">
+    <header><span class="n">3</span><b>About the vehicles and parking</b></header>
+    <div class="inner">
+      <span class="qlabel">What type of vehicles will be charging?</span>
+      <div class="opts" id="s-veh"></div>
+      <span class="qlabel">Roughly how long do people stay while parked?
+        <span class="qhint">This is what decides how fast the chargers need to be</span></span>
+      <div class="opts" id="s-dwell"></div>
+      <span class="qlabel">Who will mainly use them?</span>
+      <div class="opts" id="s-users"></div>
+      <span class="qlabel">How will people activate the charge?
+        <span class="qhint">Tick everything you want to allow</span></span>
+      <div class="opts" id="s-pay"></div>
+      <div class="panel hidden" id="paynote" style="margin-bottom:20px"></div>
+      <span class="qlabel">Roughly how many charging spaces?</span>
+      <div class="opts" id="s-bays"></div>
+    </div>
+  </div>
+
+  <!-- 4 install: supply, plain english -->
+  <div class="step hidden" id="step4i">
+    <header><span class="n">4</span><b>Main incoming electrical supply</b>
+      <span style="margin-left:auto;font-size:12px;color:#8a959a">Don't know is a perfectly good answer</span></header>
+    <div class="inner">
+      <span class="qlabel">Does the site have its own separate power distribution, such as a substation,
+        switch room or its own dedicated supply?</span>
+      <div class="row3" id="s-dist"></div>
+      <div class="hidden" id="distextra">
+        <div class="subq">
+          <span class="qlabel" style="margin-top:4px">Helpful, but not essential
+            <span class="qhint">If you can add a photo and a line about it, we can often size the
+              job without visiting. Skip it if you would rather we just came and looked.</span></span>
+          <div class="shots" style="max-width:230px">
+            <div class="shot" id="distshot"></div>
+          </div>
+          <div class="field" style="margin-top:12px;margin-bottom:0">
+            <label for="f-dist">Anything you can tell us about it
+              <span style="font-weight:normal;color:#8a959a">(optional)</span></label>
+            <textarea id="f-dist" rows="2" placeholder="For example: our own substation behind the
+warehouse, or a separate meter and switch room by the loading bay"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 maintenance -->
+  <div class="step hidden" id="step3m">
+    <header><span class="n">3</span><b>About the chargers you already have</b></header>
+    <div class="inner">
+      <span class="qlabel">How many chargers are on site?</span>
+      <div class="opts" id="s-mcount"></div>
+      <span class="qlabel">Roughly how long ago were they installed?</span>
+      <div class="opts" id="s-mage"></div>
+      <span class="qlabel">What sort of chargers are they?</span>
+      <div class="opts" id="s-mtype"></div>
+      <span class="qlabel">How heavily are they used?</span>
+      <div class="opts" id="s-muse"></div>
+      <span class="qlabel">Are they working at the moment?</span>
+      <div class="opts" id="s-mwork"></div>
+      <div class="field" style="margin-top:4px">
+        <label for="f-make">Who makes them, if you know? <span style="font-weight:normal;color:#8a959a">(optional)</span></label>
+        <input id="f-make" placeholder="e.g. Rolec, ChargePoint, Alpitronic, Autel, or leave blank">
+      </div>
+      <div class="field">
+        <label for="f-installer">Who installed them? <span style="font-weight:normal;color:#8a959a">(optional)</span></label>
+        <input id="f-installer" placeholder="Another company is fine, we maintain any make">
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="step hidden" id="step5">
+    <header><span class="n">5</span><b id="h5">What this means for you</b></header>
+    <div class="inner">
+      <div id="rec"></div>
+      <div id="funding"></div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="step hidden" id="step6">
+    <header><span class="n">6</span><b>Photos, if you have them</b>
+      <span style="margin-left:auto;font-size:12px;color:#8a959a">all optional</span></header>
+    <div class="inner">
+      <p style="margin:0 0 14px;font-size:13px;color:#5d6c72" id="phototext"></p>
+      <div class="shots" id="shots"></div>
+      <div style="font-size:13px;color:#5d6c72;margin-top:12px" id="photobar"></div>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="step" id="step7">
+    <header><span class="n">Contact</span><b>Who shall we get back to?</b>
+      <span style="margin-left:auto;font-size:12px;color:#8a959a">we cannot reply without a name and email</span></header>
+    <div class="inner">
+      <div class="grid2">
+        <div class="field" id="wrap-name"><label for="f-name"><span class="req">*</span>Contact name</label>
+          <input id="f-name" autocomplete="name" placeholder="Who should we ask for?"></div>
+        <div class="field" id="wrap-email"><label for="f-email"><span class="req">*</span>Email address</label>
+          <input id="f-email" type="email" autocomplete="email" placeholder="name@company.co.uk"></div>
+        <div class="field"><label for="f-co">Company or organisation</label><input id="f-co"></div>
+        <div class="field"><label for="f-phone">Phone <span style="font-weight:normal;color:#8a959a">(optional)</span></label>
+          <input id="f-phone" autocomplete="tel"></div>
+        <div class="field"><label for="f-postcode">Site postcode</label>
+          <input id="f-postcode" autocomplete="postal-code" placeholder="e.g. PE12 7FH"></div>
+        <div class="field"><label for="f-when">When are you hoping to do this?</label>
+          <select id="f-when"><option>As soon as possible</option><option>Within 3 months</option>
+            <option>3 to 6 months</option><option>Just looking into costs for now</option></select></div>
+      </div>
+      <div class="field"><label for="f-address">Site address
+        <span style="font-weight:normal;color:#8a959a">(where the chargers would go)</span></label>
+        <textarea id="f-address" rows="3" autocomplete="street-address"
+          placeholder="Building or site name&#10;Street&#10;Town"></textarea></div>
+      <div class="field"><label for="f-notes">Anything else we should know?</label>
+        <textarea id="f-notes" rows="3"></textarea></div>
+      <div class="formerr hidden" id="formerr"></div>
+      <button class="btn" id="submit">Request a free site survey</button>
+      <p style="font-size:12px;color:#8a959a;margin:12px 0 0">
+        No obligation and no charge for the survey. We'll confirm what your site can take and
+        what funding you qualify for before you commit to anything.</p>
+    </div>
+  </div>
+
+  <div class="step hidden" id="done"><div class="inner">
+    <div class="summary"><h2>Thanks, that's everything we need to get started</h2>
+      <dl id="donefields"></dl>
+      <div class="note" id="donenote"></div></div>
+    <button class="btn ghost" id="restart" style="margin-top:14px">Start again</button>
+  </div></div>
+</main>
+
+<footer>
+  <div class="fin">
+    <span class="fmark"><svg viewBox="0 0 180 168" role="img" aria-label="AJS Energy"> <title>AJS Energy</title> <rect x="0" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="62" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="124" y="0" width="56" height="124" fill="#005F8C"></rect><rect x="0" y="130" width="180" height="38" fill="#00859F"></rect><path d="M4,88 L23,36 L33,36 L52,88 L41.5,88 L38.6,72 L17.4,72 L14.5,88 Z M28,45 L22,63 L34,63 Z" fill="#ffffff" fill-rule="evenodd"></path><path d="M108,36 L108,70 C108,80.5 100,88 89,88 C79,88 72,82 70,73 L80.5,70 C82,76 85,79 89,79 C94,79 96.5,75.5 96.5,70 L96.5,36 Z" fill="#ffffff"></path><path d="M165,43.5 L165,49 A13,13 0 1 0 152,62 A13,13 0 1 1 139,75 L139,80.5" fill="none" stroke="#ffffff" stroke-width="11.5"></path> <text x="90" y="156" font-family="Archivo, Arial, Helvetica, sans-serif" font-weight="700" font-size="23" letter-spacing="4.2" text-anchor="middle" fill="#ffffff">ENERGY</text></svg></span>
+    <div class="faddr">
+      <b>AJS Energy</b><br>
+      Innovation House, 6 Cibus Way, Holbeach, PE12 7FH
+    </div>
+    <a class="fsite" href="https://ajsenergy.uk">ajsenergy.uk</a>
+  </div>
+</footer>
+
+<script>
+/* ---------------- question data, all plain English ---------------- */
+const KINDS=[
+ {id:'install', n:'New chargers installed',      d:"We'll design, supply, install and certify them"},
+ {id:'funded',  n:'A funded scheme, no upfront cost', d:'A partner installs and runs them, you get a share'},
+ {id:'maint',   n:'Service or repair existing chargers', d:"Any make, even if someone else fitted them"},
+ {id:'unsure',  n:"Not sure yet",                d:"Tell us about the site and we'll advise"}
+];
+
+const SITES=[
+ {id:'workplace',   n:'Workplace or office',     d:'Staff and visitor parking'},
+ {id:'fleet',       n:'Fleet or delivery depot', d:'Vans, HGVs or coaches'},
+ {id:'retail',      n:'Retail or public car park',d:'Paid or free public access'},
+ {id:'hospitality', n:'Hospitality or leisure',  d:'Hotels, pubs, restaurants, gyms, attractions'},
+ {id:'education',   n:'School, college or university',d:'Staff, student and visitor parking'},
+ {id:'other',       n:'Something else',          d:"Tell us below and we'll advise"}
+];
+
+/* `sites` lists which site types an option applies to. Omit it to always show.
+   Per the review: a workplace gets cars and vans only, a fleet depot gets vans,
+   HGVs and a mix, and cars are not offered to a depot. */
+const VEHICLES=[
+ {id:'cars',  n:'Cars',           d:'Staff and visitor cars',
+  sites:['workplace','retail','hospitality','education','other']},
+ {id:'vans',  n:'Vans',           d:'Light commercial vehicles'},
+ {id:'hgv',   n:'HGVs or coaches',d:'Heavy vehicles, big batteries',
+  sites:['fleet','retail','other']},
+ {id:'mixed', n:'A mix',          d:'Cars and commercial vehicles'},
+ {id:'dkveh', n:"Not sure yet",   d:'Still working it out'}
+];
+
+/* Users, also site dependent. Residents and customer vehicles are gone. */
+const USERS=[
+ {id:'staff',    n:'Our staff',            d:'Employee vehicles'},
+ {id:'fleetv',   n:'Our own vehicles',     d:'Company fleet'},
+ {id:'visitors', n:'Visitors and customers',d:'People coming to the site',
+  sites:['workplace','retail','hospitality','education','other']},
+ {id:'public',   n:'The general public',   d:'Open access, likely paid',
+  sites:['retail','hospitality','other']}
+];
+
+const forSite=list=>list.filter(o=>!o.sites||o.sites.includes(S.site));
+
+const DWELL=[
+ {id:'short',  n:'Under an hour',      d:'Quick stop, then gone',        speed:'rapid'},
+ {id:'medium', n:'One to four hours',  d:'A shop, meal, gym or meeting', speed:'fast'},
+ {id:'day',    n:'All day',            d:'Parked for a working day',     speed:'slow'},
+ {id:'night',  n:'Overnight',          d:'Left plugged in all night',    speed:'slow'},
+ {id:'varies', n:'It varies a lot',    d:'A real mix of stays',          speed:'mixed'}
+];
+
+const BAYS=[
+ {id:'1',    n:'Just one',    d:''},
+ {id:'2-5',  n:'Two to five', d:''},
+ {id:'6-10', n:'Six to ten',  d:''},
+ {id:'11+',  n:'More than ten',d:''},
+ {id:'dk',   n:"Not sure yet",d:"We'll advise on the right number"}
+];
+
+/* maintenance branch */
+const MCOUNT=[{id:'1',n:'One'},{id:'2-5',n:'Two to five'},{id:'6-10',n:'Six to ten'},
+              {id:'11+',n:'More than ten'},{id:'dk',n:"Not sure"}];
+const MAGE=[{id:'<1',n:'Under a year',d:'Likely still in warranty'},
+            {id:'1-3',n:'One to three years'},{id:'3-5',n:'Three to five years'},
+            {id:'5+',n:'More than five years',d:'May need parts or upgrades'},
+            {id:'dk',n:"Don't know"}];
+const MTYPE=[{id:'wall',n:'Wall mounted',d:'Fixed to a wall or post'},
+             {id:'ped',n:'Pedestal or post',d:'Free standing in the car park'},
+             {id:'rapid',n:'Rapid units',d:'Large cabinets, tethered cables'},
+             {id:'mix',n:'A mix of types'},{id:'dk',n:"Don't know"}];
+const MUSE=[{id:'light',n:'Lightly used',d:'Occasional, a few sessions a week'},
+            {id:'mod',n:'Moderately used',d:'Daily but not constant'},
+            {id:'heavy',n:'Heavily used',d:'In use most of the day, every day'},
+            {id:'dk',n:"Don't know"}];
+const MWORK=[{id:'ok',n:'All working',d:'Preventive cover wanted'},
+             {id:'some',n:'Some faults',d:'One or more playing up'},
+             {id:'down',n:'All down',d:"We'll prioritise this"},
+             {id:'dk',n:"Don't know"}];
+
+const YND=[{id:'yes',n:'Yes'},{id:'no',n:'No'},{id:'dk',n:"Don't know"}];
+
+const PAY=[
+ {id:'contactless',n:'Contactless card payment',
+  d:'Tap to pay at the unit or a shared terminal'},
+ {id:'card',       n:'Credit or debit card',
+  d:'Inserted or entered, including fuel cards on some units'},
+ {id:'apprfid',    n:'App or RFID card',
+  d:'Manufacturer app, or a fob or works ID card tapped on the unit'},
+ {id:'free',       n:'Free to use',
+  d:'No payment needed, absorbed as a benefit or attraction'},
+ {id:'dkpay',      n:"Not decided yet",
+  d:"We'll talk you through the options"}
+];
+
+const SHOTS_I=[['Distribution board','The main incoming electrical supply','img'],
+               ['Electricity meter','Your supply details','img'],
+               ['Where the chargers go','The parking area or wall','img'],
+               ['Walk-through video','Walk slowly from the distribution board to the parking','vid']];
+const SHOTS_M=[['The charger','Whole unit, with any screen visible','img'],
+               ['Serial or rating label','Usually on the side or inside the door','img'],
+               ['Any error message','Photo of the screen or fault light','img'],
+               ['The car park','Shows how the units are laid out','img']];
+
+/* ---------------- state ---------------- */
+const S={kind:null,site:null,veh:[],dwell:null,users:[],bays:null,dist:null,pay:[],
+         mcount:null,mage:null,mtype:null,muse:null,mwork:null};
+const media={};
+const el=id=>document.getElementById(id);
+const isMaint=()=>S.kind==='maint';
+const find=(list,id)=>list.find(x=>x.id===id);
+
+/* ---------------- generic tile renderer ---------------- */
+function tiles(host,list,k,cls){
+  const h=el(host); h.innerHTML='';
+  list.forEach(o=>{
+    const b=document.createElement('button');
+    if(cls==='row3'){
+      b.className=o.id+(S[k]===o.id?' picked':'');
+      b.textContent=o.n;
+    } else {
+      b.className='opt'+(S[k]===o.id?' picked':'');
+      b.innerHTML='<strong>'+o.n+'</strong>'+(o.d?'<small>'+o.d+'</small>':'');
+    }
+    b.onclick=()=>{S[k]=S[k]===o.id?null:o.id;render();};
+    h.appendChild(b);
+  });
+}
+
+/* Multi-select tiles. Used for activation methods, where more than one
+   is normally allowed on the same unit. */
+function multiTiles(host,list,k){
+  const h=el(host); h.innerHTML='';
+  if(!Array.isArray(S[k])) S[k]=[];
+  list.forEach(o=>{
+    const on=S[k].includes(o.id);
+    const b=document.createElement('button');
+    b.className='opt'+(on?' picked':'');
+    b.innerHTML='<strong>'+(on?'\u2713  ':'')+o.n+'</strong>'+(o.d?'<small>'+o.d+'</small>':'');
+    b.onclick=()=>{on?S[k].splice(S[k].indexOf(o.id),1):S[k].push(o.id);render();};
+    h.appendChild(b);
+  });
+}
+
+/* ---------------- chips ---------------- */
+const CHIPS=[['kind',KINDS],['site',SITES],['dwell',DWELL],
+             ['bays',BAYS],['dist',YND],['mcount',MCOUNT],['mage',MAGE],
+             ['mtype',MTYPE],['muse',MUSE],['mwork',MWORK]];
+const LABEL={dist:'Own distribution',pay:'Payment',bays:'Connectors',mcount:'Chargers',
+             mage:'Age',mtype:'Type',muse:'Usage',mwork:'Status'};
+
+function chips(){
+  const out=[];
+  CHIPS.forEach(([k,list])=>{
+    if(!S[k]) return;
+    const o=find(list,S[k]);
+    const pre=LABEL[k]?LABEL[k]+': ':'';
+    out.push('<button class="chip" data-k="'+k+'">'+pre+o.n+' <em>&times;</em></button>');
+  });
+  [['veh',VEHICLES,'Vehicles'],['users',USERS,'Users'],['pay',PAY,'Activation']]
+    .forEach(([k,list,pre])=>(S[k]||[]).forEach(id=>{
+      const o=find(list,id);
+      if(o) out.push('<button class="chip" data-multi="'+k+'|'+id+'">'+pre+': '+o.n+
+                     ' <em>&times;</em></button>');
+    }));
+  el('chips').innerHTML=out.join(' ');
+  el('none').classList.toggle('hidden',out.length>0);
+  el('chips').querySelectorAll('[data-multi]').forEach(b=>b.onclick=()=>{
+    const [k,id]=b.dataset.multi.split('|');
+    S[k].splice(S[k].indexOf(id),1);render();
+  });
+  el('chips').querySelectorAll('[data-k]').forEach(b=>
+    b.onclick=()=>{S[b.dataset.k]=null;render();});
+}
+
+/* ---------------- recommendation, in plain English ---------------- */
+function recommend(){
+  const r=el('rec');
+  if(isMaint()){
+    const heavy=S.muse==='heavy', broken=S.mwork==='down'||S.mwork==='some';
+    let tier,why;
+    if(heavy||S.mcount==='11+'){tier='Fully managed cover';
+      why='Heavily used sites need proactive monitoring and unlimited callouts, because every hour a unit is down is a driver turned away.';}
+    else if(S.muse==='mod'||S.mcount==='6-10'){tier='Monitored cover';
+      why='Remote monitoring picks up most faults before your users report them, with an annual service visit and a helpline.';}
+    else {tier='Annual service cover';
+      why='For lightly used sites an annual safety inspection, test and firmware update is usually enough.';}
+    r.innerHTML='<div class="rec"><h3>Based on what you\'ve told us</h3>'+
+      '<div class="big">'+tier+' looks like the right fit</div><p>'+why+'</p>'+
+      (broken?'<p><strong>You\'ve told us something isn\'t working.</strong> We\'ll treat this as urgent and get someone to call you rather than waiting on the survey.</p>':'')+
+      '<p>We service and repair any make, including units we didn\'t install. If we did install them, you get a reduced rate.</p></div>';
+    return;
+  }
+  if(!S.dwell) {r.innerHTML=''; return;}
+  const d=find(DWELL,S.dwell);
+  const big=(S.veh||[]).includes('hgv')||(S.veh||[]).includes('mixed');
+  let head,body;
+  if(d.speed==='rapid'||big&&d.speed==='medium'){
+    head='Rapid charging';
+    body='People aren\'t staying long enough for a standard charger to be much use, so you need units that put a meaningful charge in during a short stop. These cost more and usually need a supply upgrade, which is exactly what the survey is for.';
+  } else if(d.speed==='fast'){
+    head='Fast charging';
+    body='A one to four hour stay is the sweet spot for fast chargers, enough to add a useful range during a meal, a shop or a gym session, without the cost of rapid units.';
+  } else if(d.speed==='slow'){
+    head='Standard charging';
+    body='With vehicles parked all day or overnight there\'s no benefit paying for faster units. A standard charger will fill any vehicle in that time, costs the least to install and puts the least strain on your supply.'+
+      (big?' Larger vehicles have bigger batteries, so we\'ll check the overnight window is long enough.':'');
+  } else {
+    head='A mix of speeds';
+    body='Varied stays usually mean a mix: a few faster units for short stops and standard ones for longer stays. We\'ll size that properly on the survey.';
+  }
+  r.innerHTML='<div class="rec"><h3>Based on how long people stay</h3>'+
+    '<div class="big">'+head+' looks like the right fit</div><p>'+body+'</p>'+
+    '<p>We\'ll confirm exact models and numbers after the survey. There is no point guessing before we\'ve seen your supply.</p></div>';
+}
+
+/* ---------------- funding, correct as at August 2026 ---------------- */
+const CAVEAT='<div class="tiny">Correct as at August 2026. Government schemes change at short notice, so we confirm your eligibility in writing before you commit to anything.</div>';
+const PARTNER='<div class="panel gold"><h3>Fully or partially funded through our partners</h3>'+
+  '<div class="figure">No upfront cost to you</div>'+
+  '<p>Our funding partners will pay for, install, own and maintain the chargers in return for a '+
+  'long-term agreement on the parking spaces, and you take a ground rent or a share of the income. '+
+  'You give up control of those bays for the term, but you carry none of the cost or the risk. '+
+  'We\'ll tell you honestly whether your site is a good candidate.</p></div>';
+
+function funding(){
+  const n=S.bays==='11+'?12:S.bays==='6-10'?8:S.bays==='2-5'?4:1;
+  const f=el('funding'); let out='';
+
+  if(S.site==='workplace'||S.site==='letting'){
+    const cap=Math.min(n,40);
+    out+='<div class="panel"><h3>Workplace Charging Scheme</h3>'+
+      '<div class="figure">Up to 75% of the cost, up to £500 a connector</div>'+
+      '<p>Capped at 40 connectors, so up to £20,000 across your sites, around £'+
+      (cap*500).toLocaleString()+' on the number you\'ve described. '+
+      'It has to be claimed by an approved installer, which we are, so we handle it for you. '+
+      'The scheme runs to 31 March 2027.</p>'+CAVEAT+'</div>';
+    if(S.site==='letting')
+      out+='<div class="panel"><h3>If you\'re a landlord</h3>'+
+        '<div class="figure">Up to 75%, up to £500 a connector</div>'+
+        '<p>A separate landlord scheme covers up to 200 connectors a year across your properties. '+
+        'Worth checking which of the two works out better for you, and we\'ll do that comparison.</p>'+CAVEAT+'</div>';
+    out+=PARTNER;
+  }
+  else if(S.site==='education'){
+    out+='<div class="panel"><h3>Grant for schools, colleges and universities</h3>'+
+      '<div class="figure">Up to 75% of the cost, up to £2,000 a connector</div>'+
+      '<p>Up to 40 connectors. The per-connector figure reduced from £2,500 to £2,000 on 1 April 2026, '+
+      'and the scheme runs to 31 March 2027. Needs designated off-street parking and a survey by '+
+      'an approved installer.</p>'+CAVEAT+'</div>'+PARTNER;
+  }
+  else if(S.site==='fleet'){
+    out+='<div class="panel"><h3>Depot Charging Scheme</h3>'+
+      '<div class="figure">Up to 70% of charger and groundwork costs</div>'+
+      '<p>Up to £1m per organisation. The current window closed on 30 June 2026 and the next '+
+      'opens on 28 October 2026, closing 29 January 2027, for work finished by 31 March 2028. '+
+      'It\'s one application per organisation, so the site list has to be right first time, '+
+      'that\'s worth planning now rather than in October. Being eligible is not the same as '+
+      'being funded: applications are first come, first served, and you may be awarded partial '+
+      'funding or none at all.</p>'+CAVEAT+'</div>'+
+      '<div class="panel"><h3>Workplace Charging Scheme, for staff parking</h3>'+
+      '<div class="figure">Up to 75% of the cost, up to £500 a connector</div>'+
+      '<p>If part of the site is staff and visitor parking rather than commercial vehicles, that '+
+      'portion can often be claimed under the workplace scheme instead. The two can sit alongside '+
+      'each other on one site, and we work out the split.</p>'+CAVEAT+'</div>'+
+      '<div class="panel shut"><h3>Fully funded is unlikely here</h3>'+
+      '<div class="figure">Depots rarely suit a funding partner</div>'+
+      '<p>Funding partners want public traffic and paying drivers. A private depot charging your '+
+      'own vehicles gives them no revenue, so the funded route almost never applies. We would '+
+      'rather say that now than waste your time on it.</p></div>';
+  }
+  else if(S.site==='retail'){
+    out+='<div class="panel shut"><h3>No government grant for public car parks</h3>'+
+      '<div class="figure">But you probably don\'t need one</div>'+
+      '<p>Retail and public parking isn\'t covered by the current grant schemes. It is, however, '+
+      'the type of site funding partners most want, so the funded route below is usually the '+
+      'better answer here, not a consolation prize.</p></div>'+PARTNER;
+  }
+  else if(S.site==='hospitality'){
+    out+='<div class="panel"><h3>Possible grant support</h3>'+
+      '<div class="figure">Up to 75%, up to £500 a connector</div>'+
+      '<p>Smaller accommodation businesses can often claim under the Workplace Charging Scheme for '+
+      'staff and guest parking. One thing to flag honestly: premises used <em>only</em> as holiday '+
+      'accommodation are generally excluded, so we check this properly rather than promise it.</p>'+CAVEAT+'</div>'+PARTNER;
+  }
+  else out+=PARTNER;
+
+  f.innerHTML=out;
+}
+
+/* ------- supply detail: only asked when they say Yes, always optional ------- */
+function distExtra(){
+  const on=S.dist==='yes';
+  el('distextra').classList.toggle('hidden',!on);
+  if(!on) return;
+  const m=media.dist, d=el('distshot');
+  d.className='shot'+(m?' has':'');
+  d.innerHTML='<span class="cap">Photo of it</span>'+(m
+    ?'<img src="'+m.url+'" alt="Power distribution">'+
+      '<button class="drop" data-rmd="1">Remove</button>'
+    :'<span class="why">Substation, switch room or main panel, from a safe distance</span>'+
+      '<button class="pick" data-addd="1">Add photo</button>');
+  const a=d.querySelector('[data-addd]'), r=d.querySelector('[data-rmd]');
+  if(a) a.onclick=()=>grabInto('dist');
+  if(r) r.onclick=()=>{delete media.dist;distExtra();};
+}
+
+/* ------- payment: flag the legal requirement where it actually applies ------- */
+function payNote(){
+  const n=el('paynote');
+  const publicFacing=['retail','hospitality'].includes(S.site);
+  const p=S.pay||[];
+  const cardless=p.length&&!p.includes('contactless')&&!p.includes('card')&&!p.includes('free');
+  if(publicFacing&&cardless){
+    n.className='panel shut'; n.classList.remove('hidden');
+    n.innerHTML='<h3>Worth knowing before you decide</h3>'+
+      '<p>On charge points open to the public at 8kW and above, contactless card payment is a legal '+
+      'requirement under the Public Charge Point Regulations 2023. App or fob access on its own is '+
+      'not enough. We will confirm whether your site counts as public access.</p>';
+  } else if(publicFacing&&p.includes('free')&&!p.includes('contactless')){
+    n.className='panel'; n.classList.remove('hidden');
+    n.innerHTML='<h3>Fine, and quite common</h3>'+
+      '<p>Free charging as a customer draw works well for hospitality and retail. If you later want '+
+      'to charge for it, the payment rules for public access will apply, so it is worth specifying '+
+      'hardware now that can take a card reader later rather than replacing units.</p>';
+  } else n.classList.add('hidden');
+}
+
+/* ---------------- photos ---------------- */
+function shots(){return isMaint()?SHOTS_M:SHOTS_I;}
+function renderShots(){
+  el('phototext').textContent=isMaint()
+    ?'A photo of the unit and its label lets us identify the model and likely parts before we travel.'
+    :'A few photos let us check your supply from the office instead of sending someone out. Images are shrunk on your device first.';
+  const host=el('shots'); host.innerHTML='';
+  shots().forEach(([cap,why,kind],i)=>{
+    const m=media[i];
+    const d=document.createElement('div');
+    d.className='shot'+(m?' has':'');
+    d.innerHTML='<span class="cap">'+cap+'</span>'+(m
+      ? (m.kind==='vid'?'<div class="vok">Video attached</div>'
+                       :'<img src="'+m.url+'" alt="'+cap+'">')+
+        '<button class="drop" data-rm="'+i+'">Remove</button>'
+      : '<span class="why">'+why+'</span><button class="pick" data-add="'+i+'">'+
+        (kind==='vid'?'Record or upload':'Add photo')+'</button>');
+    host.appendChild(d);
+  });
+  host.querySelectorAll('[data-add]').forEach(b=>
+    b.onclick=()=>grab(+b.dataset.add,shots()[+b.dataset.add][2]));
+  host.querySelectorAll('[data-rm]').forEach(b=>
+    b.onclick=()=>{delete media[+b.dataset.rm];renderShots();});
+  const c=Object.keys(media).filter(k=>k!=='dist').length;
+  el('photobar').innerHTML=c?'<b>'+c+' attached.</b> That\'s plenty to work from.'
+    :'Nothing attached. That\'s fine, it just means we\'ll likely need to visit before quoting.';
+}
+function grabInto(key){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*'; inp.capture='environment';
+  inp.onchange=()=>{
+    const f=inp.files[0]; if(!f) return;
+    const img=new Image();
+    img.onload=()=>{
+      const max=1600,sc=Math.min(1,max/Math.max(img.width,img.height));
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      media[key]={kind:'img',name:f.name,url:c.toDataURL('image/jpeg',0.8)};
+      distExtra();
+    };
+    img.src=URL.createObjectURL(f);
+  };
+  inp.click();
+}
+
+function grab(slot,kind){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept=kind==='vid'?'video/*':'image/*'; inp.capture='environment';
+  inp.onchange=()=>{
+    const f=inp.files[0]; if(!f) return;
+    if(kind==='vid'){media[slot]={kind:'vid',name:f.name};renderShots();return;}
+    const img=new Image();
+    img.onload=()=>{
+      const max=1600,sc=Math.min(1,max/Math.max(img.width,img.height));
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      media[slot]={kind:'img',name:f.name,url:c.toDataURL('image/jpeg',0.8)};
+      renderShots();
+    };
+    img.src=URL.createObjectURL(f);
+  };
+  inp.click();
+}
+
+/* ---------------- orchestration ---------------- */
+function render(){
+  chips();
+  tiles('s-kind',KINDS,'kind');
+  tiles('s-site',SITES,'site');
+
+  el('step2').classList.toggle('hidden',!S.kind);
+
+  const maint=isMaint();
+  el('step3i').classList.toggle('hidden',maint||!S.site);
+  el('step4i').classList.toggle('hidden',maint||!S.site);
+  el('step3m').classList.toggle('hidden',!maint||!S.site);
+
+  if(!maint&&S.site){
+    multiTiles('s-veh',forSite(VEHICLES),'veh'); tiles('s-dwell',DWELL,'dwell');
+    multiTiles('s-users',forSite(USERS),'users'); tiles('s-bays',BAYS,'bays');
+    tiles('s-dist',YND,'dist','row3');
+    multiTiles('s-pay',PAY,'pay');
+    distExtra();
+    payNote();
+  }
+  if(maint&&S.site){
+    tiles('s-mcount',MCOUNT,'mcount'); tiles('s-mage',MAGE,'mage');
+    tiles('s-mtype',MTYPE,'mtype');    tiles('s-muse',MUSE,'muse');
+    tiles('s-mwork',MWORK,'mwork');
+  }
+
+  const ready = S.site && (maint ? (S.mcount&&S.muse) : ((S.veh||[]).length&&S.dwell&&S.bays));
+  el('step5').classList.toggle('hidden',!ready);
+  el('step6').classList.toggle('hidden',!ready);
+  /* contact details stay visible at all times: without them an enquiry is useless */
+  el('h5').textContent=maint?'What we\'d suggest':'What this means for you';
+
+  if(ready){recommend();funding();renderShots();}
+}
+
+el('submit').onclick=()=>{
+  /* An enquiry with no name or email cannot be answered, so both are required. */
+  const name=el('f-name').value.trim(), email=el('f-email').value.trim();
+  const emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+  el('wrap-name').classList.toggle('bad',!name);
+  el('wrap-email').classList.toggle('bad',!emailOk);
+  const problems=[];
+  if(!name)  problems.push('your name');
+  if(!email) problems.push('your email address');
+  else if(!emailOk) problems.push('a valid email address');
+  if(!S.kind) problems.push('what you need help with');
+  if(!S.site) problems.push('what sort of site it is');
+  if(problems.length){
+    const err=el('formerr');
+    err.textContent='Before we can send this, we still need '+
+      (problems.length>1
+        ? problems.slice(0,-1).join(', ')+' and '+problems[problems.length-1]
+        : problems[0])+'.';
+    err.classList.remove('hidden');
+    (!name?el('f-name'):!emailOk?el('f-email'):el('s-kind')).scrollIntoView(
+      {behavior:'smooth',block:'center'});
+    if(!name) el('f-name').focus(); else if(!emailOk) el('f-email').focus();
+    return;
+  }
+  el('formerr').classList.add('hidden');
+
+  const rows=[['Reference','AJSE-ENQ-'+Math.floor(1000+Math.random()*9000)],
+              ['Enquiry',find(KINDS,S.kind).n],
+              ['Site',find(SITES,S.site).n]];
+  if(isMaint()){
+    rows.push(['Chargers on site',find(MCOUNT,S.mcount).n]);
+    if(S.mage)  rows.push(['Age',find(MAGE,S.mage).n]);
+    if(S.mtype) rows.push(['Type',find(MTYPE,S.mtype).n]);
+    rows.push(['Usage',find(MUSE,S.muse).n]);
+    if(S.mwork) rows.push(['Status',find(MWORK,S.mwork).n]);
+    if(el('f-make').value)      rows.push(['Make',el('f-make').value]);
+    if(el('f-installer').value) rows.push(['Installed by',el('f-installer').value]);
+  } else {
+    rows.push(['Vehicles',S.veh.map(i=>find(VEHICLES,i).n).join(', ')]);
+    rows.push(['Typical stay',find(DWELL,S.dwell).n]);
+    if((S.users||[]).length)
+      rows.push(['Users',S.users.map(i=>find(USERS,i).n).join(', ')]);
+    rows.push(['Spaces',find(BAYS,S.bays).n]);
+    if(S.dist)  rows.push(['Own distribution',find(YND,S.dist).n]);
+    if((S.pay||[]).length)
+      rows.push(['Activation',S.pay.map(i=>find(PAY,i).n).join(', ')]);
+    if(el('f-dist').value) rows.push(['Supply notes',el('f-dist').value]);
+    if(media.dist) rows.push(['Supply photo','attached']);
+  }
+  rows.push(['Timescale',el('f-when').value]);
+  rows.push(['Photos',Object.keys(media).length||'none']);
+  rows.push(['Contact name',el('f-name').value]);
+  rows.push(['Email',el('f-email').value]);
+  if(el('f-phone').value) rows.push(['Phone',el('f-phone').value]);
+  if(el('f-co').value)    rows.push(['Company',el('f-co').value]);
+  if(el('f-address').value.trim())
+    rows.push(['Site address',el('f-address').value.trim().replace(/\n+/g,', ')]);
+  rows.push(['Postcode',el('f-postcode').value.trim()||'not given']);
+  el('donefields').innerHTML=rows.map(([k,v])=>'<dt>'+k+'</dt><dd>'+v+'</dd>').join('');
+  el('donenote').textContent=isMaint()&&(S.mwork==='down'||S.mwork==='some')
+    ?'You\'ve told us something isn\'t working, so we\'ll call you rather than emailing. Expect to hear from us shortly.'
+    :'We\'ll review this and come back to you to arrange a free site survey. Nothing is committed until you\'ve seen a written quote and your confirmed funding position.';
+  el('done').classList.remove('hidden');
+  el('done').scrollIntoView({behavior:'smooth',block:'center'});
+};
+el('restart').onclick=()=>{
+  Object.keys(S).forEach(k=>S[k]=['pay','veh','users'].includes(k)?[]:null);
+  Object.keys(media).forEach(k=>delete media[k]);
+  el('done').classList.add('hidden');
+  el('formerr').classList.add('hidden');
+  ['wrap-name','wrap-email'].forEach(i=>el(i).classList.remove('bad'));
+  ['f-name','f-email','f-co','f-phone','f-address','f-postcode','f-notes','f-make',
+   'f-installer','f-dist']
+    .forEach(i=>{if(el(i))el(i).value='';});
+  render(); window.scrollTo({top:0,behavior:'smooth'});
+};
+
+render();
+</script>
