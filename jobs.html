@@ -108,6 +108,10 @@
   .jobcard .client{font-size:12.5px;color:var(--faint);margin-top:1px}
   .typerow{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
   .typerow svg{color:var(--faint)}
+  .ownerline{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .ownerline b{color:var(--navy)}
+  .ownersel{padding:3px 6px;border:1px solid var(--line);border-radius:var(--r-sm);font-size:12px;
+            font-family:inherit;background:var(--surface);color:var(--navy)}
   .divider{height:1px;background:#eef2f3}
   .row3{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
   .assigneepill{display:flex;align-items:center;gap:8px;min-width:0}
@@ -168,7 +172,7 @@
       <div class="field"><label>Email</label><input id="inv-email" type="email" placeholder="jane@ajsenergy.uk"></div>
       <div class="field"><label>&nbsp;</label><button class="btn" id="inv-send" type="button" style="width:100%">Send invite</button></div>
     </div>
-    <p class="hint" style="margin:-6px 0 16px">They get an email with a link to set their own password and sign in - no password to share. New accounts start as an engineer; change their role below once they're set up.</p>
+    <p class="hint" style="margin:-6px 0 16px">They get an email with a link to set their own password and sign in - no password to share. New accounts start as an engineer under you; an admin can change roles if needed.</p>
     <div id="teamListHost"></div>
   </div>
 
@@ -233,21 +237,39 @@
   el('whoRole').textContent = me.role;
   el('logoutBtn').onclick = signOut;
 
+  // three tiers: an engineer only ever sees their own jobs; a manager sees jobs they created
+  // plus jobs assigned to engineers they manage; an admin sees everything company-wide. The
+  // actual row filtering happens in Postgres RLS (internal.visible_job_ids()) - isAdmin/isManager
+  // here only drive which buttons and controls this page shows, they're not a security boundary.
+  const isAdmin = me.role === 'admin';
   const isManager = me.role === 'manager';
-  el('pageTitle').textContent = isManager ? 'All jobs' : 'My jobs';
-  el('pageSub').textContent = isManager
-    ? 'Every job across the team. Assign, reassign, or add a new one.'
-    : 'Jobs assigned to you. Opening a form here does not yet pre-fill or submit against the job - that wiring is next.';
+  const isStaff = isAdmin || isManager;
+  el('pageTitle').textContent = isAdmin ? 'All jobs' : isManager ? 'My team\'s jobs' : 'My jobs';
+  el('pageSub').textContent = isAdmin
+    ? 'Every job across the whole company.'
+    : isManager
+      ? 'Jobs you created, or jobs assigned to engineers you manage.'
+      : 'Jobs assigned to you. Opening a form here does not yet pre-fill or submit against the job - that wiring is next.';
   el('wiringHint').textContent = 'Note: "Start form" opens the tool standalone for now - it isn\'t yet linked to a specific job record.';
 
-  let engineers = [];
+  let engineers = [], managers = [];
   async function reloadEngineers() {
-    const { data } = await supabase.from('profiles').select('id, full_name').eq('role', 'engineer').eq('active', true).order('full_name');
+    // a manager only ever assigns/invites their own engineers; an admin can assign anyone active
+    let q = supabase.from('profiles').select('id, full_name').eq('role', 'engineer').eq('active', true).order('full_name');
+    if (!isAdmin) q = q.eq('manager_id', me.id);
+    const { data } = await q;
     engineers = data || [];
   }
+  async function reloadManagers() {
+    // for the job-ownership transfer control - any manager/admin (see profiles_select_scoped:
+    // managers and admins can always see each other, specifically to support this)
+    const { data } = await supabase.from('profiles').select('id, full_name, role').in('role', ['manager', 'admin']).order('full_name');
+    managers = data || [];
+  }
 
-  if (isManager) {
+  if (isStaff) {
     await reloadEngineers();
+    await reloadManagers();
     el('newJobBtn').classList.remove('hidden');
     el('teamBtn').classList.remove('hidden');
   }
@@ -280,7 +302,7 @@
     // several engineers on it) - RLS on `jobs` already restricts an engineer to only the rows
     // they're in job_assignees for, so there's no client-side filter needed here any more.
     const { data, error } = await supabase.from('jobs')
-      .select('*, job_assignees(engineer_id, profiles(full_name))')
+      .select('*, owner:profiles!jobs_created_by_fkey(full_name), job_assignees(engineer_id, profiles(full_name))')
       .order('created_at', { ascending: false });
     if (error) { el('listHost').innerHTML = '<div class="empty">Could not load jobs: '+esc(error.message)+'</div>'; return; }
     allJobs = data || [];
@@ -312,7 +334,7 @@
 
   function render(jobs) {
     if (!allJobs.length) {
-      el('listHost').innerHTML = isManager
+      el('listHost').innerHTML = isStaff
         ? '<div class="empty"><b>No jobs yet</b>Create the first one above and assign it to an engineer.</div>'
         : '<div class="empty"><b>Nothing assigned to you yet</b>Your manager will assign jobs here as they come in.</div>';
       return;
@@ -322,6 +344,11 @@
       return;
     }
     const cards = jobs.map(j => {
+      // only the job's owning manager (or an admin) can edit who's assigned or transfer
+      // ownership - a manager who merely oversees an assigned engineer can see the job but
+      // not edit it, matching the jobs_update_owner_or_admin / job_assignees_write_owner_or_admin
+      // RLS rules on the database side.
+      const canEdit = isAdmin || (isManager && j.created_by === me.id);
       const assignees = j.job_assignees || [];
       const pills = assignees.length
         ? assignees.map(a => {
@@ -329,15 +356,24 @@
             return '<span class="apill"><span class="av">'+esc(initialsOf(name))+'</span>'+esc(name)+'</span>';
           }).join('')
         : '<span class="apill unassigned">Unassigned</span>';
-      const editBtn = isManager ? '<button type="button" class="assignedit" data-job="'+j.id+'">Edit</button>' : '';
-      const panel = (isManager && expandedAssign.has(j.id))
+      const editBtn = canEdit ? '<button type="button" class="assignedit" data-job="'+j.id+'">Edit</button>' : '';
+      const panel = (canEdit && expandedAssign.has(j.id))
         ? '<div class="assigneechecks" data-panel="'+j.id+'"></div>' : '';
+      const ownerName = (j.owner && j.owner.full_name) || '(unknown)';
+      const ownerLine = isStaff
+        ? (canEdit
+            ? '<div class="ownerline">Owner <select class="ownersel" data-job="'+j.id+'">' +
+              managers.map(m => '<option value="'+m.id+'"'+(m.id===j.created_by?' selected':'')+'>'+esc(m.full_name||'(unnamed)')+(m.role==='admin'?' (admin)':'')+'</option>').join('') +
+              '</select></div>'
+            : '<div class="ownerline">Owner <b>'+esc(ownerName)+'</b></div>')
+        : '';
       return '<div class="jobcard">' +
         '<div class="row1"><span class="refnum">'+esc(j.reference)+'</span>' +
         '<span class="pill '+j.status+'">'+esc(STATUS_LABELS[j.status] || j.status)+'</span></div>' +
         '<div><div class="site">'+esc(j.site_name || 'Site not set')+'</div>' +
         (j.client ? '<div class="client">'+esc(j.client)+'</div>' : '') + '</div>' +
         '<div class="typerow">'+ICO_CASE+'<span>'+esc(FORM_LABEL[j.form_type]||j.form_type)+'</span></div>' +
+        ownerLine +
         '<div class="divider"></div>' +
         '<div class="row3">' +
           '<div class="assigneepills">'+pills+editBtn+'</div>' +
@@ -348,7 +384,7 @@
     }).join('');
     el('listHost').innerHTML = '<div class="jobslist">'+cards+'</div>';
 
-    if (isManager) {
+    if (isStaff) {
       // fill in any expanded assignment panels with the live checkbox list
       el('listHost').querySelectorAll('[data-panel]').forEach(host => {
         const job = jobs.find(x => x.id === host.dataset.panel);
@@ -363,6 +399,13 @@
           const id = btn.dataset.job;
           if (expandedAssign.has(id)) expandedAssign.delete(id); else expandedAssign.add(id);
           renderList();
+        };
+      });
+      el('listHost').querySelectorAll('.ownersel').forEach(sel => {
+        sel.onchange = async () => {
+          const { error } = await supabase.from('jobs').update({ created_by: sel.value }).eq('id', sel.dataset.job);
+          if (error) { alert('Could not transfer ownership: ' + error.message); }
+          loadJobs();
         };
       });
     }
@@ -394,23 +437,38 @@
   }
 
   async function loadTeam() {
-    const { data, error } = await supabase.from('profiles').select('id, full_name, email, role, active').order('full_name');
+    // a manager only manages their own invited engineers; an admin sees and manages everyone
+    let q = supabase.from('profiles').select('id, full_name, email, role, active, manager_id').order('full_name');
+    if (!isAdmin) q = q.eq('manager_id', me.id);
+    const { data, error } = await q;
     if (error) { el('teamListHost').innerHTML = '<div class="empty">Could not load team: '+esc(error.message)+'</div>'; return; }
     renderTeam(data || []);
   }
 
   function renderTeam(rows) {
-    if (!rows.length) { el('teamListHost').innerHTML = '<div class="empty">No team members yet.</div>'; return; }
+    if (!rows.length) {
+      el('teamListHost').innerHTML = isAdmin
+        ? '<div class="empty">No team members yet.</div>'
+        : '<div class="empty">You haven\'t invited any engineers yet - use the form above.</div>';
+      return;
+    }
     const cards = rows.map(p => {
-      const roleSel = '<select class="assign teamrole" data-id="'+p.id+'">' +
-        ['engineer','manager'].map(r => '<option value="'+r+'"'+(p.role===r?' selected':'')+'>'+r+'</option>').join('') +
-        '</select>';
+      // role changes are admin-only (a manager promoting/demoting anyone, including engineers
+      // they invited, is out of scope now that admin is the top tier) - and even an admin can't
+      // edit their OWN role here, since that's exactly how this account got accidentally
+      // self-demoted from manager to engineer earlier.
+      const isSelf = p.id === me.id;
+      const roleCtl = isAdmin
+        ? '<select class="assign teamrole" data-id="'+p.id+'"'+(isSelf?' disabled title="You can\'t change your own role here"':'')+'>' +
+          ['engineer','manager','admin'].map(r => '<option value="'+r+'"'+(p.role===r?' selected':'')+'>'+r+'</option>').join('') +
+          '</select>'
+        : '<span class="pill assigned">'+esc(p.role)+'</span>';
       const activeBtn = '<button type="button" class="pill teamactive '+(p.active?'submitted':'reviewed')+'" data-id="'+p.id+'" data-active="'+p.active+'">'+(p.active?'Active':'Inactive')+'</button>';
       return '<div class="teamrow">' +
         '<div class="avatarmd">'+initialsOf(p.full_name)+'</div>' +
-        '<div class="teamwho"><div class="tname">'+esc(p.full_name||'(unnamed)')+(p.id===me.id?' <span class="muted">(you)</span>':'')+'</div>' +
+        '<div class="teamwho"><div class="tname">'+esc(p.full_name||'(unnamed)')+(isSelf?' <span class="muted">(you)</span>':'')+'</div>' +
         '<div class="temail">'+esc(p.email||'-')+'</div></div>' +
-        '<div class="teamctl">'+roleSel+activeBtn+'</div>' +
+        '<div class="teamctl">'+roleCtl+activeBtn+'</div>' +
         '</div>';
     }).join('');
     el('teamListHost').innerHTML = '<div class="teamlist">'+cards+'</div>';
@@ -419,7 +477,7 @@
       sel.onchange = async () => {
         const { error } = await supabase.from('profiles').update({ role: sel.value }).eq('id', sel.dataset.id);
         if (error) { alert('Could not change role: ' + error.message); }
-        loadTeam(); reloadEngineers();
+        loadTeam(); reloadEngineers(); reloadManagers();
       };
     });
     el('teamListHost').querySelectorAll('.teamactive').forEach(btn => {
@@ -438,7 +496,7 @@
     return 'AJSE-' + (codes[type]||'JOB') + '-' + n;
   }
 
-  if (isManager) {
+  if (isStaff) {
     renderAssigneeChecks(el('nj-assign'), []);
     el('nj-ref').value = genReference(el('nj-type').value);
     el('nj-type').onchange = () => { el('nj-ref').value = genReference(el('nj-type').value); };
